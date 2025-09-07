@@ -2,14 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"log"
-	"user-service/internal/delivery"
+
+	"user-service/internal/app"
 )
 
 func main() {
-	engine := gin.Default()
-	engine.GET("/health", delivery.HealthCheck)
+	engine := app.Build()
 
 	addr := ":8080"
 	err := engine.Run(addr)
