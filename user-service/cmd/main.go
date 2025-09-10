@@ -2,16 +2,18 @@ package main
 
 import (
 	"fmt"
+	"gorm.io/gorm"
 	"log"
-	"user-service/internal/infra/db"
 
 	"user-service/internal/app"
+	"user-service/internal/infra/db"
 )
 
 func main() {
-	engine := app.Build()
+	var psg *gorm.DB = db.ConnectToPostgres()
+	log.Println(psg)
 
-	db.ConnectToPostgres()
+	engine := app.Build()
 
 	addr := ":8080"
 	err := engine.Run(addr)

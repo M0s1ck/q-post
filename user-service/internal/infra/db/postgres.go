@@ -3,24 +3,43 @@ package db
 import (
 	"context"
 	"fmt"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"log"
+	"github.com/google/uuid"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 	"os"
+	"user-service/internal/domain"
 )
 
-func ConnectToPostgres() {
-	ctx := context.Background() // "postgres://username:password@localhost:5432/database_name"
-	dbpool, err := pgxpool.New(ctx, "postgres://postgres:postgres@localhost:5432/q-post")
+const dbConnectionStr = "postgres://postgres:postgres@localhost:5432/q-post?sslmode=disable"
+
+func ConnectToPostgres() *gorm.DB {
+	ctx := context.Background()
+	var psgConf postgres.Config = postgres.Config{
+		DSN:                  dbConnectionStr,
+		PreferSimpleProtocol: true,
+	}
+
+	var dialector gorm.Dialector = postgres.New(psgConf)
+
+	db, err := gorm.Open(dialector) // TODO: here pointer to config for some reason
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to create connection pool: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		os.Exit(1)
 	}
 
-	defer dbpool.Close()
-
-	pingErr := dbpool.Ping(ctx)
-	if pingErr != nil {
-		log.Printf("Unable to ping database: %v\n", pingErr)
+	// Temp
+	user := domain.User{
+		Id:       uuid.New(),
+		Username: "dummy2",
 	}
+
+	err = gorm.G[domain.User](db).Create(ctx, &user)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to create user: %v\n", err)
+		os.Exit(1)
+	}
+
+	return db
 }
