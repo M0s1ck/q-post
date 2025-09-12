@@ -13,7 +13,7 @@ func main() {
 	var psg *gorm.DB = db.ConnectToPostgres()
 	log.Println(psg)
 
-	engine := app.Build()
+	engine := app.BuildGinEngine(psg)
 
 	addr := ":8080"
 	err := engine.Run(addr)
