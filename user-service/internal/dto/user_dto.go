@@ -5,10 +5,14 @@ import (
 	"time"
 )
 
-type UserDto struct {
+type UserResponse struct {
 	Id           uuid.UUID
 	Username     string
 	PostKarma    int
 	CommentKarma int
 	CreatedAt    time.Time
+}
+
+type UserToCreate struct {
+	Username string
 }

@@ -15,8 +15,19 @@ func NewUserUseCase(userRepo *repository.UserRepo) *UserUseCase {
 	return &UserUseCase{userRepo: userRepo}
 }
 
-func (useCase *UserUseCase) GetById(id uuid.UUID) (dto.UserDto, error) {
+func (useCase *UserUseCase) GetById(id uuid.UUID) (*dto.UserResponse, error) {
 	user, err := useCase.userRepo.GetById(id)
-	userDto := mapper.GetUserDto(&user)
+
+	if err != nil {
+		return nil, err
+	}
+
+	userDto := mapper.GetUserDto(user)
 	return userDto, err
+}
+
+func (useCase *UserUseCase) Create(userDto *dto.UserToCreate) (*dto.UuidOnlyResponse, error) {
+	user := mapper.UserFromCreateRequest(userDto)
+	id, err := useCase.userRepo.Create(user)
+	return &dto.UuidOnlyResponse{Id: id}, err
 }

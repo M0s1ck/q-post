@@ -24,20 +24,8 @@ func ConnectToPostgres() *gorm.DB {
 		os.Exit(1)
 	}
 
-	//// Temp
-	// 	ctx := context.Background()
-	//
-	//user := domain.User{
-	//	Id:       uuid.New(),
-	//	Username: "dummy2",
-	//}
-	//
-	//err = gorm.G[domain.User](db).Create(ctx, &user)
-	//
-	//if err != nil {
-	//	fmt.Fprintf(os.Stderr, "Unable to create user: %v\n", err)
-	//	os.Exit(1)
-	//}
+	sqlDB, _ := db.DB()
+	fmt.Println(sqlDB.Stats())
 
 	return db
 }
