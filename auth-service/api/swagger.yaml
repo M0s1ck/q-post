@@ -1,0 +1,18 @@
+info:
+  contact: {}
+  description: Gin app for user auth
+  title: QPost auth service
+  version: 1.0.0
+paths:
+  /health:
+    get:
+      responses:
+        "200":
+          description: OK
+      summary: Service healthcheck
+      tags:
+      - Health
+schemes:
+- http
+- https
+swagger: "2.0"
