@@ -9,6 +9,8 @@ import (
 	"user-service/internal/infra/db"
 )
 
+// Swagger attributes:
+//
 // @title QPost user service
 // @version 1.0.0
 // @description Gin app to deal with users

@@ -59,6 +59,36 @@ paths:
       tags:
       - Health
   /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Removes user by their id
+      parameters:
+      - description: user id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Removes user
+      tags:
+      - Users
     get:
       consumes:
       - application/json
@@ -94,7 +124,7 @@ paths:
     put:
       consumes:
       - application/json
-      description: Updates user details
+      description: Updates user details by their id
       parameters:
       - description: user id
         in: path

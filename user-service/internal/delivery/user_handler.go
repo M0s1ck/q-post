@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"log"
 	"net/http"
 	"user-service/internal/domain"
 	"user-service/internal/dto"
@@ -24,6 +25,7 @@ func (uHand *UserHandler) RegisterHandlers(engine *gin.Engine) {
 	engine.GET("/users/:id", uHand.Get)
 	engine.POST("/users/create", uHand.Create)
 	engine.PUT("/users/:id", uHand.UpdateDetails)
+	engine.DELETE("/users/:id", uHand.Delete)
 }
 
 // Get godoc
@@ -57,6 +59,7 @@ func (uHand *UserHandler) Get(c *gin.Context) {
 
 	if err != nil {
 		respondErr(c, http.StatusInternalServerError, err.Error())
+		log.Println("Unexpected err: ", err)
 		return
 	}
 
@@ -94,6 +97,7 @@ func (uHand *UserHandler) Create(c *gin.Context) {
 
 	if err != nil {
 		respondErr(c, http.StatusInternalServerError, err.Error())
+		log.Println("Unexpected err: ", err)
 		return
 	}
 
@@ -103,7 +107,7 @@ func (uHand *UserHandler) Create(c *gin.Context) {
 // UpdateDetails godoc
 //
 //	@Summary		Update user details
-//	@Description	Updates user details
+//	@Description	Updates user details by their id
 //	@Tags			Users
 //	@Accept			json
 //	@Produce		json
@@ -140,6 +144,45 @@ func (uHand *UserHandler) UpdateDetails(c *gin.Context) {
 
 	if err != nil {
 		respondErr(c, http.StatusInternalServerError, err.Error())
+		log.Println("Unexpected err: ", err)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+// Delete godoc
+//
+//	@Summary		Removes user
+//	@Description	Removes user by their id
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	 path		string	true	"user id"
+//	@Success		204
+//	@Failure		400	{object}	dto.ErrorResponse
+//	@Failure		404	{object}	dto.ErrorResponse
+//	@Failure		500	{object}	dto.ErrorResponse
+//	@Router			/users/{id} [delete]
+func (uHand *UserHandler) Delete(c *gin.Context) {
+	var idStr string = c.Param("id")
+	id, uuidFormErr := uuid.Parse(idStr)
+
+	if uuidFormErr != nil {
+		respondErr(c, http.StatusBadRequest, uuidFormErr.Error())
+		return
+	}
+
+	err := uHand.userUseCase.Delete(id)
+
+	if errors.Is(err, domain.ErrNotFound) {
+		respondErr(c, http.StatusNotFound, fmt.Sprintf("User with id=%s was not found", idStr))
+		return
+	}
+
+	if err != nil {
+		respondErr(c, http.StatusInternalServerError, err.Error())
+		log.Println("Unexpected err: ", err)
 		return
 	}
 

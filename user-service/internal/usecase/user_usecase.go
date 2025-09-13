@@ -36,3 +36,8 @@ func (useCase *UserUseCase) UpdateDetails(id uuid.UUID, details *dto.UserDetails
 	err := useCase.userRepo.UpdateDetails(id, details)
 	return err
 }
+
+func (useCase *UserUseCase) Delete(id uuid.UUID) error {
+	err := useCase.userRepo.Delete(id)
+	return err
+}
