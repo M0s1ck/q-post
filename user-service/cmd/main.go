@@ -9,6 +9,10 @@ import (
 	"user-service/internal/infra/db"
 )
 
+// @title QPost user service
+// @version 1.0.0
+// @description Gin app to deal with users
+// @schemes http https
 func main() {
 	var psg *gorm.DB = db.ConnectToPostgres()
 	log.Println(psg)

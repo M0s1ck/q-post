@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 	"user-service/internal/domain"
+	"user-service/internal/dto"
 )
 
 const duplicateErrCode = "23505"
@@ -50,4 +51,25 @@ func (repo *UserRepo) Create(user *domain.User) (uuid.UUID, error) {
 	}
 
 	return user.Id, nil
+}
+
+func (repo *UserRepo) UpdateDetails(id uuid.UUID, details *dto.UserDetailsToUpdate) error {
+	ctx := context.Background()
+	user, err := gorm.G[domain.User](repo.db).Where("id = ?", id).First(ctx)
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return fmt.Errorf("%w: update details: %v", domain.ErrNotFound, err)
+	}
+
+	user.Name = details.Name
+	user.Birthday = details.Birthday
+	user.Description = details.Description
+
+	res := repo.db.Save(&user)
+
+	if res.Error != nil {
+		return fmt.Errorf("%w: update details: %v", domain.UnhandledDbError, res.Error)
+	}
+
+	return nil
 }

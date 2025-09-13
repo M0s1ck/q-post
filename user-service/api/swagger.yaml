@@ -5,13 +5,28 @@ definitions:
         example: Error info
         type: string
     type: object
+  dto.UserDetailsToUpdate:
+    properties:
+      birthday:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+    type: object
   dto.UserResponse:
     properties:
+      birthday:
+        type: string
       commentKarma:
         type: integer
       createdAt:
         type: string
+      description:
+        type: string
       id:
+        type: string
+      name:
         type: string
       postKarma:
         type: integer
@@ -31,6 +46,9 @@ definitions:
     type: object
 info:
   contact: {}
+  description: Gin app to deal with users
+  title: QPost user service
+  version: 1.0.0
 paths:
   /health:
     get:
@@ -73,6 +91,42 @@ paths:
       summary: Get user by id
       tags:
       - Users
+    put:
+      consumes:
+      - application/json
+      description: Updates user details
+      parameters:
+      - description: user id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserDetailsToUpdate'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Update user details
+      tags:
+      - Users
   /users/create:
     post:
       consumes:
@@ -96,8 +150,8 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/dto.ErrorResponse'
-        "404":
-          description: Not Found
+        "409":
+          description: Conflict
           schema:
             $ref: '#/definitions/dto.ErrorResponse'
         "500":
@@ -107,4 +161,7 @@ paths:
       summary: Create new user
       tags:
       - Users
+schemes:
+- http
+- https
 swagger: "2.0"

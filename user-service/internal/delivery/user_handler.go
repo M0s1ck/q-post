@@ -23,6 +23,7 @@ type UserHandler struct {
 func (uHand *UserHandler) RegisterHandlers(engine *gin.Engine) {
 	engine.GET("/users/:id", uHand.Get)
 	engine.POST("/users/create", uHand.Create)
+	engine.PUT("/users/:id", uHand.UpdateDetails)
 }
 
 // Get godoc
@@ -97,6 +98,52 @@ func (uHand *UserHandler) Create(c *gin.Context) {
 	}
 
 	c.IndentedJSON(http.StatusCreated, uuidResponse)
+}
+
+// UpdateDetails godoc
+//
+//	@Summary		Update user details
+//	@Description	Updates user details
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	 path		string	true	"user id"
+//	@Param   	    user body       dto.UserDetailsToUpdate true "details"
+//	@Success		204
+//	@Failure		400	{object}	dto.ErrorResponse
+//	@Failure		404	{object}	dto.ErrorResponse
+//	@Failure		500	{object}	dto.ErrorResponse
+//	@Router			/users/{id} [put]
+func (uHand *UserHandler) UpdateDetails(c *gin.Context) {
+	var idStr string = c.Param("id")
+	id, uuidFormErr := uuid.Parse(idStr)
+
+	if uuidFormErr != nil {
+		respondErr(c, http.StatusBadRequest, uuidFormErr.Error())
+		return
+	}
+
+	var details dto.UserDetailsToUpdate
+	bindErr := c.BindJSON(&details)
+
+	if bindErr != nil {
+		respondErr(c, http.StatusBadRequest, bindErr.Error())
+		return
+	}
+
+	err := uHand.userUseCase.UpdateDetails(id, &details)
+
+	if errors.Is(err, domain.ErrNotFound) {
+		respondErr(c, http.StatusNotFound, fmt.Sprintf("User with id=%s was not found", idStr))
+		return
+	}
+
+	if err != nil {
+		respondErr(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }
 
 func respondErr(c *gin.Context, code int, message string) {

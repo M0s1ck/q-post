@@ -12,6 +12,9 @@ func GetUserDto(user *domain.User) *dto.UserResponse {
 		Username:     user.Username,
 		PostKarma:    user.PostKarma,
 		CommentKarma: user.CommentKarma,
+		Name:         user.Name,
+		Description:  user.Description,
+		Birthday:     user.Birthday,
 		CreatedAt:    user.CreatedAt,
 	}
 

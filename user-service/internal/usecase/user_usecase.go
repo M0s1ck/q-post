@@ -31,3 +31,8 @@ func (useCase *UserUseCase) Create(userDto *dto.UserToCreate) (*dto.UuidOnlyResp
 	id, err := useCase.userRepo.Create(user)
 	return &dto.UuidOnlyResponse{Id: id}, err
 }
+
+func (useCase *UserUseCase) UpdateDetails(id uuid.UUID, details *dto.UserDetailsToUpdate) error {
+	err := useCase.userRepo.UpdateDetails(id, details)
+	return err
+}

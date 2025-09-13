@@ -10,5 +10,8 @@ type User struct {
 	Username     string
 	PostKarma    int
 	CommentKarma int
+	Name         *string // can be null
+	Description  *string
+	Birthday     *time.Time
 	CreatedAt    time.Time
 }
