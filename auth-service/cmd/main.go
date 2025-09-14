@@ -2,7 +2,10 @@ package main
 
 import (
 	"auth-service/internal/app"
+	"auth-service/internal/infra/db"
 	"fmt"
+	"gorm.io/gorm"
+	"log"
 )
 
 // Swagger attributes:
@@ -12,6 +15,9 @@ import (
 // @description Gin app for user auth
 // @schemes http https
 func main() {
+	var psg *gorm.DB = db.ConnectToPostgres()
+	log.Println(*psg)
+
 	fmt.Println("Hello, auth!")
 
 	engine := app.BuildGinEngine()
