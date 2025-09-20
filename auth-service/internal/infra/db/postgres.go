@@ -2,9 +2,10 @@ package db
 
 import (
 	"fmt"
+	"os"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"os"
 )
 
 const dbConnectionStr = "postgres://postgres:postgres@localhost:5432/q-post?sslmode=disable&search_path=auth"
@@ -21,7 +22,7 @@ func ConnectToPostgres() *gorm.DB {
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
-		os.Exit(1)
+		os.Exit(1) //TODO: ask gpt what is this
 	}
 
 	sqlDB, _ := db.DB()

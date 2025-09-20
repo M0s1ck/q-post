@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
+	"log"
+
+	"gorm.io/gorm"
+
 	"auth-service/internal/app"
 	"auth-service/internal/infra/db"
-	"fmt"
-	"gorm.io/gorm"
-	"log"
 )
 
 // Swagger attributes:

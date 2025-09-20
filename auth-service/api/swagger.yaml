@@ -1,3 +1,23 @@
+definitions:
+  dto.ErrorResponse:
+    properties:
+      message:
+        example: Error info
+        type: string
+    type: object
+  dto.UsernamePass:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  dto.UuidOnlyResponse:
+    properties:
+      id:
+        example: 1214a280-1162-408a-918f-5cb9300194ce
+        type: string
+    type: object
 info:
   contact: {}
   description: Gin app for user auth
@@ -12,6 +32,41 @@ paths:
       summary: Service healthcheck
       tags:
       - Health
+  /signup/username:
+    post:
+      consumes:
+      - application/json
+      description: Signs up user with username & password, saves him to db, returns
+        created id.
+      parameters:
+      - description: user
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UsernamePass'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.UuidOnlyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Sign up user with username & password
+      tags:
+      - Authentication
 schemes:
 - http
 - https

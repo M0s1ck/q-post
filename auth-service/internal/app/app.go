@@ -1,15 +1,33 @@
 package app
 
 import (
-	"auth-service/api"
-	"auth-service/internal/delivery"
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"gorm.io/gorm"
+
+	"auth-service/api"
+	"auth-service/internal/delivery"
+	infradb "auth-service/internal/infra/db"
+	"auth-service/internal/repository"
+	"auth-service/internal/security"
+	"auth-service/internal/usecase"
 )
 
 func BuildGinEngine() *gin.Engine {
+	var db *gorm.DB = infradb.ConnectToPostgres()
+
+	authenRepo := repository.NewAuthenticationRepo(db)
+
+	passHasher := security.NewArgonHasher()
+
+	authenUCase := usecase.NewAuthenticationUsecase(authenRepo, passHasher)
+
+	authenHandler := delivery.NewAuthenticationHandler(authenUCase)
+
 	engine := gin.Default()
+
+	authenHandler.RegisterHandlers(engine)
 
 	engine.GET("/health", delivery.HealthCheck)
 
