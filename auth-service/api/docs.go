@@ -30,7 +30,7 @@ const docTemplate = `{
         },
         "/signup/username": {
             "post": {
-                "description": "Signs up user with username \u0026 password, saves him to db, returns created id.",
+                "description": "Signs up with username \u0026 password, saves to db, returns created id.",
                 "consumes": [
                     "application/json"
                 ],
@@ -40,7 +40,7 @@ const docTemplate = `{
                 "tags": [
                     "Authentication"
                 ],
-                "summary": "Sign up user with username \u0026 password",
+                "summary": "Sign up with username \u0026 password",
                 "parameters": [
                     {
                         "description": "user",
@@ -56,7 +56,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/dto.UuidOnlyResponse"
+                            "$ref": "#/definitions/dto.UserIdAndTokens"
                         }
                     },
                     "400": {
@@ -91,6 +91,17 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.UserIdAndTokens": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.UsernamePass": {
             "type": "object",
             "properties": {
@@ -99,15 +110,6 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
-                }
-            }
-        },
-        "dto.UuidOnlyResponse": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string",
-                    "example": "1214a280-1162-408a-918f-5cb9300194ce"
                 }
             }
         }

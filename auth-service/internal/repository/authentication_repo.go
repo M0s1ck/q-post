@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 
@@ -22,16 +21,9 @@ func NewAuthenticationRepo(dbs *gorm.DB) *AuthenticationRepo {
 	return &AuthenticationRepo{db: dbs}
 }
 
-func (repo *AuthenticationRepo) CreateByUsernamePass(id uuid.UUID, username string, passHash string) error {
+func (repo *AuthenticationRepo) Create(authUser *domain.AuthUser) error {
 	ctx := context.Background()
-
-	authUser := domain.AuthUser{
-		Id:             id,
-		Username:       username,
-		HashedPassword: passHash,
-	}
-
-	err := gorm.G[domain.AuthUser](repo.db).Create(ctx, &authUser)
+	err := gorm.G[domain.AuthUser](repo.db).Create(ctx, authUser)
 
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) && pgErr.Code == duplicateErrCode {

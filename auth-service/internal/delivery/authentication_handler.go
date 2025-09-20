@@ -32,7 +32,7 @@ func (hand *AuthenticationHandler) RegisterHandlers(engine *gin.Engine) {
 //	@Accept			json
 //	@Produce		json
 //	@Param   	    user body       dto.UsernamePass true "user"
-//	@Success		201	{object}	dto.UuidOnlyResponse
+//	@Success		201	{object}	dto.UserIdAndTokens
 //	@Failure		400	{object}	dto.ErrorResponse
 //	@Failure		409	{object}	dto.ErrorResponse
 //	@Failure		500	{object}	dto.ErrorResponse
@@ -46,7 +46,7 @@ func (hand *AuthenticationHandler) signUpWithUsername(c *gin.Context) {
 		return
 	}
 
-	id, err := hand.uCase.SignUp(&usernamePass)
+	userIdAndTokens, err := hand.uCase.SignUp(&usernamePass)
 
 	if errors.Is(err, domain.ErrDuplicate) {
 		msg := fmt.Sprintf("User with username=%s already exists", usernamePass.Username)
@@ -58,5 +58,5 @@ func (hand *AuthenticationHandler) signUpWithUsername(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Message: err.Error()})
 	}
 
-	c.JSON(http.StatusOK, dto.UuidOnlyResponse{Id: id})
+	c.JSON(http.StatusOK, userIdAndTokens)
 }
