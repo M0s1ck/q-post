@@ -22,7 +22,7 @@ func BuildGinEngine() *gin.Engine {
 	passHasher := security.NewArgonHasher()
 	tokenIssuer := security.NewTokenIssuer()
 
-	authenUCase := usecase.NewAuthenticationUsecase(authenRepo, passHasher, tokenIssuer)
+	authenUCase := usecase.NewSignUpUsecase(authenRepo, passHasher, tokenIssuer)
 
 	authenHandler := delivery.NewAuthenticationHandler(authenUCase)
 

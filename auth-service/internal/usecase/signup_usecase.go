@@ -14,24 +14,24 @@ type PasswordHasher interface {
 }
 
 type TokenIssuer interface {
-	CreateAccessToken(username string) (string, error)
+	CreateAccessToken(id uuid.UUID, username string, role domain.UserRole) (string, error)
 }
 
-type AuthenticationUsecase struct {
+type SignUpUsecase struct {
 	repo        *repository.AuthenticationRepo
 	passHasher  PasswordHasher
 	tokenIssuer TokenIssuer
 }
 
-func NewAuthenticationUsecase(rep *repository.AuthenticationRepo, hasher PasswordHasher, tokenIssuer TokenIssuer) *AuthenticationUsecase {
-	return &AuthenticationUsecase{
+func NewSignUpUsecase(rep *repository.AuthenticationRepo, hasher PasswordHasher, tokenIssuer TokenIssuer) *SignUpUsecase {
+	return &SignUpUsecase{
 		repo:        rep,
 		passHasher:  hasher,
 		tokenIssuer: tokenIssuer,
 	}
 }
 
-func (uc *AuthenticationUsecase) SignUp(usPass *dto.UsernamePass) (*dto.UserIdAndTokens, error) {
+func (uc *SignUpUsecase) SignUpWithUsername(usPass *dto.UsernamePass) (*dto.UserIdAndTokens, error) {
 	passHash, err := uc.passHasher.Hash(usPass.Password)
 	if err != nil {
 		return nil, err
@@ -43,6 +43,7 @@ func (uc *AuthenticationUsecase) SignUp(usPass *dto.UsernamePass) (*dto.UserIdAn
 		Id:             id,
 		Username:       usPass.Username,
 		HashedPassword: passHash,
+		Role:           domain.RoleUser,
 	}
 
 	dbErr := uc.repo.Create(&authUser)
@@ -51,7 +52,7 @@ func (uc *AuthenticationUsecase) SignUp(usPass *dto.UsernamePass) (*dto.UserIdAn
 		return nil, dbErr
 	}
 
-	accessToken, tokenErr := uc.tokenIssuer.CreateAccessToken(usPass.Username)
+	accessToken, tokenErr := uc.tokenIssuer.CreateAccessToken(authUser.Id, authUser.Username, authUser.Role)
 
 	if tokenErr != nil {
 		return nil, tokenErr

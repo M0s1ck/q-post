@@ -7,4 +7,5 @@ type AuthUser struct {
 	Username       string
 	Email          *string
 	HashedPassword string
+	Role           UserRole `gorm:"type:smallint;not null;default:0"`
 }

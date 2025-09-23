@@ -12,12 +12,12 @@ import (
 	"auth-service/internal/usecase"
 )
 
-func NewAuthenticationHandler(useCase *usecase.AuthenticationUsecase) *AuthenticationHandler {
-	return &AuthenticationHandler{uCase: useCase}
+func NewAuthenticationHandler(signUpUc *usecase.SignUpUsecase) *AuthenticationHandler {
+	return &AuthenticationHandler{sigUpUc: signUpUc}
 }
 
 type AuthenticationHandler struct {
-	uCase *usecase.AuthenticationUsecase
+	sigUpUc *usecase.SignUpUsecase
 }
 
 func (hand *AuthenticationHandler) RegisterHandlers(engine *gin.Engine) {
@@ -46,7 +46,7 @@ func (hand *AuthenticationHandler) signUpWithUsername(c *gin.Context) {
 		return
 	}
 
-	userIdAndTokens, err := hand.uCase.SignUp(&usernamePass)
+	userIdAndTokens, err := hand.sigUpUc.SignUpWithUsername(&usernamePass)
 
 	if errors.Is(err, domain.ErrDuplicate) {
 		msg := fmt.Sprintf("User with username=%s already exists", usernamePass.Username)
