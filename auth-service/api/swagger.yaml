@@ -33,6 +33,44 @@ paths:
       summary: Service healthcheck
       tags:
       - Health
+  /signin/username:
+    post:
+      consumes:
+      - application/json
+      description: Sign in with username & password, returns id and jwt.
+      parameters:
+      - description: user
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UsernamePass'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserIdAndTokens'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Sign in with username & password
+      tags:
+      - Authentication
   /signup/username:
     post:
       consumes:
@@ -67,7 +105,7 @@ paths:
             $ref: '#/definitions/dto.ErrorResponse'
       summary: Sign up with username & password
       tags:
-      - Authentication
+      - Sign up
 schemes:
 - http
 - https

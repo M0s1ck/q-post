@@ -12,32 +12,35 @@ import (
 	"auth-service/internal/usecase"
 )
 
-func NewAuthenticationHandler(signUpUc *usecase.SignUpUsecase) *AuthenticationHandler {
-	return &AuthenticationHandler{sigUpUc: signUpUc}
+func NewAuthenticationHandler(signInUc *usecase.SignInUsecase) *AuthenticationHandler {
+	return &AuthenticationHandler{
+		signInUc: signInUc,
+	}
 }
 
 type AuthenticationHandler struct {
-	sigUpUc *usecase.SignUpUsecase
+	signInUc *usecase.SignInUsecase
 }
 
 func (hand *AuthenticationHandler) RegisterHandlers(engine *gin.Engine) {
-	engine.POST("/signup/username", hand.signUpWithUsername)
+	engine.POST("/signin/username", hand.signInWithUsername)
 }
 
-// signUpWithUsername godoc
+// signInWithUsername godoc
 //
-//	@Summary		Sign up with username & password
-//	@Description	Signs up with username & password, saves to db, returns created id.
+//	@Summary		Sign in with username & password
+//	@Description	Sign in with username & password, returns id and jwt.
 //	@Tags			Authentication
 //	@Accept			json
 //	@Produce		json
 //	@Param   	    user body       dto.UsernamePass true "user"
-//	@Success		201	{object}	dto.UserIdAndTokens
+//	@Success		200	{object}	dto.UserIdAndTokens
 //	@Failure		400	{object}	dto.ErrorResponse
-//	@Failure		409	{object}	dto.ErrorResponse
+//	@Failure		401	{object}	dto.ErrorResponse
+//	@Failure		404	{object}	dto.ErrorResponse
 //	@Failure		500	{object}	dto.ErrorResponse
-//	@Router			/signup/username [post]
-func (hand *AuthenticationHandler) signUpWithUsername(c *gin.Context) {
+//	@Router			/signin/username [post]
+func (hand *AuthenticationHandler) signInWithUsername(c *gin.Context) {
 	usernamePass := dto.UsernamePass{}
 	parseErr := c.BindJSON(&usernamePass)
 
@@ -46,16 +49,23 @@ func (hand *AuthenticationHandler) signUpWithUsername(c *gin.Context) {
 		return
 	}
 
-	userIdAndTokens, err := hand.sigUpUc.SignUpWithUsername(&usernamePass)
+	userIdAndTokens, err := hand.signInUc.SignInByUsername(&usernamePass)
 
-	if errors.Is(err, domain.ErrDuplicate) {
-		msg := fmt.Sprintf("User with username=%s already exists", usernamePass.Username)
-		c.JSON(http.StatusConflict, dto.ErrorResponse{Message: msg})
+	if errors.Is(err, domain.ErrNotFound) {
+		msg := fmt.Sprintf("User with username=%s not found", usernamePass.Username)
+		c.JSON(http.StatusNotFound, dto.ErrorResponse{Message: msg})
+		return
+	}
+
+	if errors.Is(err, domain.ErrWrongPassword) {
+		msg := fmt.Sprintf("Wrong password")
+		c.JSON(http.StatusUnauthorized, dto.ErrorResponse{Message: msg})
 		return
 	}
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, dto.ErrorResponse{Message: err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusOK, userIdAndTokens)

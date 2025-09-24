@@ -28,6 +28,64 @@ const docTemplate = `{
                 }
             }
         },
+        "/signin/username": {
+            "post": {
+                "description": "Sign in with username \u0026 password, returns id and jwt.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Sign in with username \u0026 password",
+                "parameters": [
+                    {
+                        "description": "user",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UsernamePass"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.UserIdAndTokens"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/signup/username": {
             "post": {
                 "description": "Signs up with username \u0026 password, saves to db, returns created id.",
@@ -38,7 +96,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authentication"
+                    "Sign up"
                 ],
                 "summary": "Sign up with username \u0026 password",
                 "parameters": [

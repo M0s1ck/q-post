@@ -22,16 +22,18 @@ func BuildGinEngine() *gin.Engine {
 	passHasher := security.NewArgonHasher()
 	tokenIssuer := security.NewTokenIssuer()
 
-	authenUCase := usecase.NewSignUpUsecase(authenRepo, passHasher, tokenIssuer)
+	signUpUc := usecase.NewSignUpUsecase(authenRepo, tokenIssuer, passHasher)
+	signInUc := usecase.NewSignInUsecase(authenRepo, tokenIssuer, passHasher)
 
-	authenHandler := delivery.NewAuthenticationHandler(authenUCase)
+	signUpHandler := delivery.NewSignUpHandler(signUpUc)
+	authenHandler := delivery.NewAuthenticationHandler(signInUc)
 
 	engine := gin.Default()
 
 	authenHandler.RegisterHandlers(engine)
+	signUpHandler.RegisterHandlers(engine)
 
 	engine.GET("/health", delivery.HealthCheck)
-
 	addSwagger(engine)
 
 	return engine

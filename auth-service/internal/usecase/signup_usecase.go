@@ -1,33 +1,27 @@
 package usecase
 
 import (
-	"auth-service/internal/domain"
 	"github.com/google/uuid"
 
+	"auth-service/internal/domain"
 	"auth-service/internal/dto"
-	"auth-service/internal/repository"
 )
 
-type PasswordHasher interface {
-	Hash(password string) (string, error)
-	Verify(password string, hash string) (bool, error)
-}
-
-type TokenIssuer interface {
-	CreateAccessToken(id uuid.UUID, username string, role domain.UserRole) (string, error)
+type UserCreater interface {
+	Create(user *domain.AuthUser) error
 }
 
 type SignUpUsecase struct {
-	repo        *repository.AuthenticationRepo
-	passHasher  PasswordHasher
+	repo        UserCreater
 	tokenIssuer TokenIssuer
+	passHasher  PasswordHasher
 }
 
-func NewSignUpUsecase(rep *repository.AuthenticationRepo, hasher PasswordHasher, tokenIssuer TokenIssuer) *SignUpUsecase {
+func NewSignUpUsecase(rep UserCreater, tokenIssuer TokenIssuer, hasher PasswordHasher) *SignUpUsecase {
 	return &SignUpUsecase{
 		repo:        rep,
-		passHasher:  hasher,
 		tokenIssuer: tokenIssuer,
+		passHasher:  hasher,
 	}
 }
 
@@ -51,6 +45,8 @@ func (uc *SignUpUsecase) SignUpWithUsername(usPass *dto.UsernamePass) (*dto.User
 	if dbErr != nil {
 		return nil, dbErr
 	}
+
+	// TODO: Call here to user-service
 
 	accessToken, tokenErr := uc.tokenIssuer.CreateAccessToken(authUser.Id, authUser.Username, authUser.Role)
 

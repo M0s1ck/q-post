@@ -36,3 +36,18 @@ func (repo *AuthenticationRepo) Create(authUser *domain.AuthUser) error {
 
 	return nil
 }
+
+func (repo *AuthenticationRepo) GetByUsername(username string) (*domain.AuthUser, error) {
+	ctx := context.Background()
+	user, err := gorm.G[domain.AuthUser](repo.db).Where("username = ?", username).First(ctx)
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("%w: get by username: %v", domain.ErrNotFound, err)
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("%w: get by username: %v", domain.UnhandledDbError, err)
+	}
+
+	return &user, nil
+}

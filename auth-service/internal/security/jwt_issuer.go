@@ -1,10 +1,12 @@
 package security
 
 import (
-	"auth-service/internal/domain"
+	"time"
+
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"time"
+
+	"auth-service/internal/domain"
 )
 
 var secret = []byte("topSecret") // TODO: move to .env
