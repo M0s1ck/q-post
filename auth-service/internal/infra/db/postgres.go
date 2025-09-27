@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"log"
 	"net/url"
 	"os"
 
@@ -19,7 +20,7 @@ func ConnectToPostgres() *gorm.DB {
 
 	var dialector gorm.Dialector = postgres.New(psgConf)
 
-	db, err := gorm.Open(dialector) // TODO: here pointer to config for some reason
+	db, err := gorm.Open(dialector)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
@@ -53,5 +54,6 @@ func getDbConnectionString() string {
 	q.Set("search_path", os.Getenv("POSTGRES_AUTH_SCHEME"))
 
 	u.RawQuery = q.Encode()
+	log.Println(u.String())
 	return u.String() // smth like postgres://postgres:postgres@localhost:5432/q-post?sslmode=disable&search_path=auth"
 }
