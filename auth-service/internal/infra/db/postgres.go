@@ -2,15 +2,16 @@ package db
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-const dbConnectionStr = "postgres://postgres:postgres@localhost:5432/q-post?sslmode=disable&search_path=auth"
-
 func ConnectToPostgres() *gorm.DB {
+	dbConnectionStr := getDbConnectionString()
+
 	var psgConf postgres.Config = postgres.Config{
 		DSN:                  dbConnectionStr,
 		PreferSimpleProtocol: true,
@@ -29,4 +30,28 @@ func ConnectToPostgres() *gorm.DB {
 	fmt.Println(sqlDB.Stats())
 
 	return db
+}
+
+func getDbConnectionString() string {
+	var dbHost string
+
+	if os.Getenv("IN_DOCKER") == "1" {
+		dbHost = os.Getenv("POSTGRES_DOCKER_HOST")
+	} else {
+		dbHost = "localhost"
+	}
+
+	u := &url.URL{
+		Scheme: "postgres",
+		User:   url.UserPassword(os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD")),
+		Host:   fmt.Sprintf("%v:%v", dbHost, os.Getenv("POSTGRES_PORT")),
+		Path:   os.Getenv("POSTGRES_DB"),
+	}
+
+	q := u.Query()
+	q.Set("sslmode", "disable")
+	q.Set("search_path", os.Getenv("POSTGRES_AUTH_SCHEME"))
+
+	u.RawQuery = q.Encode()
+	return u.String() // smth like postgres://postgres:postgres@localhost:5432/q-post?sslmode=disable&search_path=auth"
 }
