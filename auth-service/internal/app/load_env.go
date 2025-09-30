@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"log"
 	"os"
 	"path/filepath"
@@ -19,10 +20,14 @@ func LoadEnv() {
 	}
 
 	err := godotenv.Load(filepath.Join(dir, ".env"))
-	if err != nil {
+
+	if errors.Is(err, os.ErrNotExist) {
 		log.Println(".env file not found. That means we're in docker")
 
 		setEnvErr = os.Setenv("IN_DOCKER", "1")
+		setEnvErr = os.Setenv("POSTGRES_HOST", "localhost")
+		setEnvErr = os.Setenv("USER_SERVICE_HOST", "localhost")
+
 		if setEnvErr != nil {
 			panic(setEnvErr)
 		}

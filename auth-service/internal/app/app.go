@@ -20,7 +20,7 @@ func BuildGinEngine() *gin.Engine {
 	authenRepo := repository.NewAuthenticationRepo(db)
 
 	passHasher := security.NewArgonHasher()
-	tokenIssuer := security.NewTokenIssuer()
+	tokenIssuer := security.NewJwtIssuer()
 
 	signUpUc := usecase.NewSignUpUsecase(authenRepo, tokenIssuer, passHasher)
 	signInUc := usecase.NewSignInUsecase(authenRepo, tokenIssuer, passHasher)

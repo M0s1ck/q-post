@@ -11,22 +11,20 @@ import (
 
 var secret = []byte("topSecret") // TODO: move to .env
 
+var (
+	myJwtSigningMethod = jwt.SigningMethodHS256
+)
+
 const authServiceBeingIssuer = "auth-service"
 
-func NewTokenIssuer() *BasicTokenIssuer {
-	return &BasicTokenIssuer{}
+func NewJwtIssuer() *JwtIssuer {
+	return &JwtIssuer{}
 }
 
-type BasicTokenIssuer struct {
+type JwtIssuer struct {
 }
 
-type MyClaims struct {
-	Username string `json:"username"`
-	Role     domain.UserRole
-	*jwt.RegisteredClaims
-}
-
-func (ti *BasicTokenIssuer) CreateAccessToken(id uuid.UUID, username string, role domain.UserRole) (string, error) {
+func (ti *JwtIssuer) IssueAccessToken(id uuid.UUID, username string, role domain.UserRole) (string, error) {
 	registeredClaims := jwt.RegisteredClaims{
 		Subject:   id.String(),
 		Issuer:    authServiceBeingIssuer,
@@ -34,19 +32,19 @@ func (ti *BasicTokenIssuer) CreateAccessToken(id uuid.UUID, username string, rol
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 60)), // TODO: clean
 	}
 
-	claims := &MyClaims{
+	claims := &MyJwtClaims{
 		Username:         username,
 		Role:             role,
 		RegisteredClaims: &registeredClaims,
 	}
 
-	var token *jwt.Token = jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	var token *jwt.Token = jwt.NewWithClaims(myJwtSigningMethod, claims)
 
-	ss, err := token.SignedString(secret)
+	signedToken, err := token.SignedString(secret)
 
 	if err != nil {
 		return "", err
 	}
 
-	return ss, nil
+	return signedToken, nil
 }

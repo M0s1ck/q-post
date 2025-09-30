@@ -34,18 +34,10 @@ func ConnectToPostgres() *gorm.DB {
 }
 
 func getDbConnectionString() string {
-	var dbHost string
-
-	if os.Getenv("IN_DOCKER") == "1" {
-		dbHost = os.Getenv("POSTGRES_DOCKER_HOST")
-	} else {
-		dbHost = "localhost"
-	}
-
 	u := &url.URL{
 		Scheme: "postgres",
 		User:   url.UserPassword(os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD")),
-		Host:   fmt.Sprintf("%v:%v", dbHost, os.Getenv("POSTGRES_PORT")),
+		Host:   os.Getenv("POSTGRES_HOST") + ":" + os.Getenv("POSTGRES_PORT"),
 		Path:   os.Getenv("POSTGRES_DB"),
 	}
 
