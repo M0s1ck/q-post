@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 
@@ -50,4 +51,21 @@ func (repo *AuthenticationRepo) GetByUsername(username string) (*domain.AuthUser
 	}
 
 	return &user, nil
+}
+
+func (repo *AuthenticationRepo) UpdateRole(userId uuid.UUID, newRole domain.UserRole) error {
+	ctx := context.Background()
+
+	affected, err := gorm.G[domain.AuthUser](repo.db).Where("id = ?", userId).
+		Update(ctx, "role", newRole)
+
+	if affected == 0 {
+		return fmt.Errorf("%w: in update role", domain.ErrNotFound)
+	}
+
+	if err != nil {
+		return fmt.Errorf("%w: in update role: %v", domain.UnhandledDbError, err)
+	}
+
+	return nil
 }

@@ -1,7 +1,10 @@
 package app
 
 import (
+	"os"
+
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
@@ -20,18 +23,25 @@ func BuildGinEngine() *gin.Engine {
 	authenRepo := repository.NewAuthenticationRepo(db)
 
 	passHasher := security.NewArgonHasher()
-	tokenIssuer := security.NewJwtIssuer()
+
+	jwtSecret := os.Getenv("JWT_SECRET_KEY")
+	signMethod := jwt.SigningMethodHS256
+	tokenIssuer := security.NewJwtIssuer(jwtSecret, signMethod)
+	tokenValidator := security.NewJwtValidator(jwtSecret, signMethod)
 
 	signUpUc := usecase.NewSignUpUsecase(authenRepo, tokenIssuer, passHasher)
 	signInUc := usecase.NewSignInUsecase(authenRepo, tokenIssuer, passHasher)
+	accessRolesUc := usecase.NewAccessRolesUsecase(authenRepo, tokenValidator)
 
 	signUpHandler := delivery.NewSignUpHandler(signUpUc)
 	authenHandler := delivery.NewAuthenticationHandler(signInUc)
+	accessRoleHandler := delivery.NewAccessRolesHandler(accessRolesUc)
 
 	engine := gin.Default()
 
 	authenHandler.RegisterHandlers(engine)
 	signUpHandler.RegisterHandlers(engine)
+	accessRoleHandler.RegisterHandlers(engine)
 
 	engine.GET("/health", delivery.HealthCheck)
 	addSwagger(engine)

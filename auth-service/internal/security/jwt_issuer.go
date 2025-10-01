@@ -9,19 +9,21 @@ import (
 	"auth-service/internal/domain"
 )
 
-var secret = []byte("topSecret") // TODO: move to .env
-
-var (
-	myJwtSigningMethod = jwt.SigningMethodHS256
+const (
+	authServiceBeingIssuer = "auth-service"
+	expireTime             = time.Minute * 60
 )
 
-const authServiceBeingIssuer = "auth-service"
-
-func NewJwtIssuer() *JwtIssuer {
-	return &JwtIssuer{}
+type JwtIssuer struct {
+	secret     []byte
+	signMethod jwt.SigningMethod
 }
 
-type JwtIssuer struct {
+func NewJwtIssuer(secret string, signMethod jwt.SigningMethod) *JwtIssuer {
+	return &JwtIssuer{
+		secret:     []byte(secret),
+		signMethod: signMethod,
+	}
 }
 
 func (ti *JwtIssuer) IssueAccessToken(id uuid.UUID, username string, role domain.UserRole) (string, error) {
@@ -29,7 +31,7 @@ func (ti *JwtIssuer) IssueAccessToken(id uuid.UUID, username string, role domain
 		Subject:   id.String(),
 		Issuer:    authServiceBeingIssuer,
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 60)), // TODO: clean
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(expireTime)),
 	}
 
 	claims := &MyJwtClaims{
@@ -38,9 +40,9 @@ func (ti *JwtIssuer) IssueAccessToken(id uuid.UUID, username string, role domain
 		RegisteredClaims: &registeredClaims,
 	}
 
-	var token *jwt.Token = jwt.NewWithClaims(myJwtSigningMethod, claims)
+	var token *jwt.Token = jwt.NewWithClaims(ti.signMethod, claims)
 
-	signedToken, err := token.SignedString(secret)
+	signedToken, err := token.SignedString(ti.secret)
 
 	if err != nil {
 		return "", err

@@ -48,7 +48,7 @@ func (uc *SignUpUsecase) SignUpWithUsername(usPass *dto.UsernamePass) (*dto.User
 
 	// TODO: Call here to user-service
 
-	accessToken, tokenErr := uc.tokenIssuer.CreateAccessToken(authUser.Id, authUser.Username, authUser.Role)
+	accessToken, tokenErr := uc.tokenIssuer.IssueAccessToken(authUser.Id, authUser.Username, authUser.Role)
 
 	if tokenErr != nil {
 		return nil, tokenErr

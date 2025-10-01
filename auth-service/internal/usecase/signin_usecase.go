@@ -40,7 +40,7 @@ func (uc *SignInUsecase) SignInByUsername(usPass *dto.UsernamePass) (*dto.UserId
 		return nil, domain.ErrWrongPassword
 	}
 
-	accessToken, tokenErr := uc.tokenIssuer.CreateAccessToken(user.Id, user.Username, user.Role)
+	accessToken, tokenErr := uc.tokenIssuer.IssueAccessToken(user.Id, user.Username, user.Role)
 
 	if tokenErr != nil {
 		return nil, tokenErr

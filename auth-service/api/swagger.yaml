@@ -1,4 +1,9 @@
 definitions:
+  dto.AccessRole:
+    properties:
+      role:
+        type: string
+    type: object
   dto.ErrorResponse:
     properties:
       message:
@@ -25,6 +30,54 @@ info:
   title: QPost auth service
   version: 1.0.0
 paths:
+  /access-roles/{userId}:
+    post:
+      consumes:
+      - application/json
+      description: Updates given user's role. Request should be sent by moder/admin
+        (with jwt) to upgrade the role.
+      parameters:
+      - description: access_role
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AccessRole'
+      - description: user id
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update user role
+      tags:
+      - Access Roles
   /health:
     get:
       responses:
@@ -109,4 +162,9 @@ paths:
 schemes:
 - http
 - https
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

@@ -7,5 +7,5 @@ type UserServiceClient struct {
 }
 
 func (client *UserServiceClient) CreateUser(us *dto.UserToCreate) {
-	
+
 }

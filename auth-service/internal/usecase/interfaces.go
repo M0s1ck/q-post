@@ -4,6 +4,7 @@ import (
 	"github.com/google/uuid"
 
 	"auth-service/internal/domain"
+	"auth-service/internal/security"
 )
 
 type PasswordHasher interface {
@@ -12,5 +13,10 @@ type PasswordHasher interface {
 }
 
 type TokenIssuer interface {
-	CreateAccessToken(id uuid.UUID, username string, role domain.UserRole) (string, error)
+	IssueAccessToken(id uuid.UUID, username string, role domain.UserRole) (string, error)
+}
+
+type TokenValidator interface {
+	ValidateAccessToken(tokenString string) (*security.MyJwtClaims, error)
+	ValidateAccessTokenWithRole(tokenString string, role domain.UserRole) (bool, error)
 }

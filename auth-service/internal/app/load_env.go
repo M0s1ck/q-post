@@ -25,6 +25,11 @@ func LoadEnv() {
 		log.Println(".env file not found. That means we're in docker")
 
 		setEnvErr = os.Setenv("IN_DOCKER", "1")
+
+		if setEnvErr != nil {
+			panic(setEnvErr)
+		}
+	} else {
 		setEnvErr = os.Setenv("POSTGRES_HOST", "localhost")
 		setEnvErr = os.Setenv("USER_SERVICE_HOST", "localhost")
 
