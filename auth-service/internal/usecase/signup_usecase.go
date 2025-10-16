@@ -1,58 +1,56 @@
 package usecase
 
 import (
+	"auth-service/internal/domain/user"
 	"github.com/google/uuid"
 
-	"auth-service/internal/domain"
 	"auth-service/internal/dto"
 )
 
-type UserCreater interface {
-	Create(user *domain.AuthUser) error
+type UserCreator interface {
+	Create(userId uuid.UUID, username string, pass string, role user.UserRole) error
 }
 
 type SignUpUsecase struct {
-	repo        UserCreater
-	tokenIssuer TokenIssuer
-	passHasher  PasswordHasher
+	userCreator       UserCreator
+	refreshTokenSavor RefreshTokenSaver
+	accessTokenIssuer AccessTokenIssuer
 }
 
-func NewSignUpUsecase(rep UserCreater, tokenIssuer TokenIssuer, hasher PasswordHasher) *SignUpUsecase {
+func NewSignUpUsecase(userCreator UserCreator, refreshTokenSavor RefreshTokenSaver,
+	accessTokenIssuer AccessTokenIssuer) *SignUpUsecase {
 	return &SignUpUsecase{
-		repo:        rep,
-		tokenIssuer: tokenIssuer,
-		passHasher:  hasher,
+		userCreator:       userCreator,
+		refreshTokenSavor: refreshTokenSavor,
+		accessTokenIssuer: accessTokenIssuer,
 	}
 }
 
 func (uc *SignUpUsecase) SignUpWithUsername(usPass *dto.UsernamePass) (*dto.UserIdAndTokens, error) {
-	passHash, err := uc.passHasher.Hash(usPass.Password)
-	if err != nil {
-		return nil, err
-	}
+	userId := uuid.New()
+	username := usPass.Username
+	pass := usPass.Password
+	userRole := user.RoleUser
 
-	id := uuid.New() // TODO: think through
+	createErr := uc.userCreator.Create(userId, username, pass, userRole)
 
-	authUser := domain.AuthUser{
-		Id:             id,
-		Username:       usPass.Username,
-		HashedPassword: passHash,
-		Role:           domain.RoleUser,
-	}
-
-	dbErr := uc.repo.Create(&authUser)
-
-	if dbErr != nil {
-		return nil, dbErr
+	if createErr != nil {
+		return nil, createErr
 	}
 
 	// TODO: Call here to user-service
 
-	accessToken, tokenErr := uc.tokenIssuer.IssueAccessToken(authUser.Id, authUser.Username, authUser.Role)
+	refreshErr := uc.refreshTokenSavor.GenerateNewAndSave(userId)
+
+	if refreshErr != nil {
+		return nil, refreshErr
+	}
+
+	accessToken, tokenErr := uc.accessTokenIssuer.IssueAccessToken(userId, username, userRole)
 
 	if tokenErr != nil {
 		return nil, tokenErr
 	}
 
-	return &dto.UserIdAndTokens{UserId: id, AccessToken: accessToken}, nil
+	return &dto.UserIdAndTokens{UserId: userId, AccessToken: accessToken}, nil
 }

@@ -1,6 +1,10 @@
 package app
 
 import (
+	"auth-service/internal/domain/refresh"
+	"auth-service/internal/domain/user"
+	"auth-service/internal/service/hash"
+	jwt2 "auth-service/internal/service/jwt"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +17,6 @@ import (
 	"auth-service/internal/delivery"
 	infradb "auth-service/internal/infra/db"
 	"auth-service/internal/repository"
-	"auth-service/internal/security"
 	"auth-service/internal/usecase"
 )
 
@@ -21,16 +24,20 @@ func BuildGinEngine() *gin.Engine {
 	var db *gorm.DB = infradb.ConnectToPostgres()
 
 	authenRepo := repository.NewAuthenticationRepo(db)
+	refreshRepo := repository.NewRefreshTokenRepo(db)
 
-	passHasher := security.NewArgonHasher()
+	strHasher := hash.NewArgonHasher()
 
 	jwtSecret := os.Getenv("JWT_SECRET_KEY")
 	signMethod := jwt.SigningMethodHS256
-	tokenIssuer := security.NewJwtIssuer(jwtSecret, signMethod)
-	tokenValidator := security.NewJwtValidator(jwtSecret, signMethod)
+	tokenIssuer := jwt2.NewJwtIssuer(jwtSecret, signMethod)
+	tokenValidator := jwt2.NewJwtValidator(jwtSecret, signMethod)
 
-	signUpUc := usecase.NewSignUpUsecase(authenRepo, tokenIssuer, passHasher)
-	signInUc := usecase.NewSignInUsecase(authenRepo, tokenIssuer, passHasher)
+	userServ := user.NewAuthUserService(authenRepo, strHasher)
+	refreshServ := refresh.NewRefreshTokenService(refreshRepo, strHasher)
+
+	signUpUc := usecase.NewSignUpUsecase(userServ, refreshServ, tokenIssuer)
+	signInUc := usecase.NewSignInUsecase(authenRepo, tokenIssuer, strHasher)
 	accessRolesUc := usecase.NewAccessRolesUsecase(authenRepo, tokenValidator)
 
 	signUpHandler := delivery.NewSignUpHandler(signUpUc)

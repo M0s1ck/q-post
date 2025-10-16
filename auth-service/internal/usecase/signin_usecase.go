@@ -2,20 +2,21 @@ package usecase
 
 import (
 	"auth-service/internal/domain"
+	"auth-service/internal/domain/user"
 	"auth-service/internal/dto"
 )
 
 type UserGetter interface {
-	GetByUsername(username string) (*domain.AuthUser, error)
+	GetByUsername(username string) (*user.AuthUser, error)
 }
 
 type SignInUsecase struct {
 	repo        UserGetter
-	tokenIssuer TokenIssuer
-	passHasher  PasswordHasher
+	tokenIssuer AccessTokenIssuer
+	passHasher  StringHasher
 }
 
-func NewSignInUsecase(repo UserGetter, tokenIssuer TokenIssuer, passHasher PasswordHasher) *SignInUsecase {
+func NewSignInUsecase(repo UserGetter, tokenIssuer AccessTokenIssuer, passHasher StringHasher) *SignInUsecase {
 	return &SignInUsecase{
 		repo:        repo,
 		tokenIssuer: tokenIssuer,

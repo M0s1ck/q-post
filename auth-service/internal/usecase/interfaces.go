@@ -1,22 +1,25 @@
 package usecase
 
 import (
+	"auth-service/internal/domain/user"
+	"auth-service/internal/service/jwt"
 	"github.com/google/uuid"
-
-	"auth-service/internal/domain"
-	"auth-service/internal/security"
 )
 
-type PasswordHasher interface {
-	Hash(password string) (string, error)
-	Verify(password string, hash string) (bool, error)
+type StringHasher interface {
+	Hash(str string) (string, error)
+	Verify(str string, hash string) (bool, error)
 }
 
-type TokenIssuer interface {
-	IssueAccessToken(id uuid.UUID, username string, role domain.UserRole) (string, error)
+type AccessTokenIssuer interface {
+	IssueAccessToken(id uuid.UUID, username string, role user.UserRole) (string, error)
 }
 
-type TokenValidator interface {
-	ValidateAccessToken(tokenString string) (*security.MyJwtClaims, error)
-	ValidateAccessTokenWithRole(tokenString string, role domain.UserRole) (bool, error)
+type AccessTokenValidator interface {
+	ValidateAccessToken(tokenString string) (*jwt.MyJwtClaims, error)
+	ValidateAccessTokenWithRole(tokenString string, role user.UserRole) (bool, error)
+}
+
+type RefreshTokenSaver interface {
+	GenerateNewAndSave(userId uuid.UUID) error
 }

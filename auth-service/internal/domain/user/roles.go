@@ -1,4 +1,4 @@
-package domain
+package user
 
 type UserRole uint8
 

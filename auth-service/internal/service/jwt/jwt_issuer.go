@@ -1,12 +1,11 @@
-package security
+package jwt
 
 import (
+	"auth-service/internal/domain/user"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-
-	"auth-service/internal/domain"
 )
 
 const (
@@ -26,7 +25,7 @@ func NewJwtIssuer(secret string, signMethod jwt.SigningMethod) *JwtIssuer {
 	}
 }
 
-func (ti *JwtIssuer) IssueAccessToken(id uuid.UUID, username string, role domain.UserRole) (string, error) {
+func (ti *JwtIssuer) IssueAccessToken(id uuid.UUID, username string, role user.UserRole) (string, error) {
 	registeredClaims := jwt.RegisteredClaims{
 		Subject:   id.String(),
 		Issuer:    authServiceBeingIssuer,

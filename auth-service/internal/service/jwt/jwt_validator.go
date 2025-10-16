@@ -1,12 +1,11 @@
-package security
+package jwt
 
 import (
+	"auth-service/internal/domain/user"
 	"fmt"
 	"reflect"
 
 	"github.com/golang-jwt/jwt/v5"
-
-	"auth-service/internal/domain"
 )
 
 type JwtValidator struct {
@@ -36,7 +35,7 @@ func (v *JwtValidator) ValidateAccessToken(tokenString string) (*MyJwtClaims, er
 	return &claims, nil
 }
 
-func (v *JwtValidator) ValidateAccessTokenWithRole(tokenString string, role domain.UserRole) (bool, error) {
+func (v *JwtValidator) ValidateAccessTokenWithRole(tokenString string, role user.UserRole) (bool, error) {
 	claims, err := v.ValidateAccessToken(tokenString)
 
 	if err != nil {

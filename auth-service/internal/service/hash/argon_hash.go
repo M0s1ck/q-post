@@ -1,4 +1,4 @@
-package security
+package hash
 
 import (
 	"github.com/alexedwards/argon2id"

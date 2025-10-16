@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"auth-service/internal/domain/user"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -9,15 +10,15 @@ import (
 )
 
 type UserRoleUpdater interface {
-	UpdateRole(userId uuid.UUID, newRoleStr domain.UserRole) error
+	UpdateRole(userId uuid.UUID, newRoleStr user.UserRole) error
 }
 
 type AccessRolesUsecase struct {
 	repo           UserRoleUpdater
-	tokenValidator TokenValidator
+	tokenValidator AccessTokenValidator
 }
 
-func NewAccessRolesUsecase(rep UserRoleUpdater, tokenValidator TokenValidator) *AccessRolesUsecase {
+func NewAccessRolesUsecase(rep UserRoleUpdater, tokenValidator AccessTokenValidator) *AccessRolesUsecase {
 	return &AccessRolesUsecase{
 		repo:           rep,
 		tokenValidator: tokenValidator,
@@ -31,11 +32,11 @@ func (uc *AccessRolesUsecase) UpdateUserRole(userId uuid.UUID, newRoleStr string
 		return fmt.Errorf("%w: %v", domain.ErrInvalidToken, err)
 	}
 
-	var newRole domain.UserRole = domain.RoleIdsByNames[newRoleStr]
-	var claimedRole domain.UserRole = claims.Role
+	var newRole user.UserRole = user.RoleIdsByNames[newRoleStr]
+	var claimedRole user.UserRole = claims.Role
 
-	if claimedRole == domain.RoleUser || claimedRole == domain.RoleModer && newRole == domain.RoleAdmin {
-		return fmt.Errorf("%w: can't update role %v having role %v", domain.ErrWeakRole, newRoleStr, domain.RoleNamesById[claimedRole]) // TODO: test
+	if claimedRole == user.RoleUser || claimedRole == user.RoleModer && newRole == user.RoleAdmin {
+		return fmt.Errorf("%w: can't update role %v having role %v", domain.ErrWeakRole, newRoleStr, user.RoleNamesById[claimedRole]) // TODO: test
 	}
 
 	repoErr := uc.repo.UpdateRole(userId, newRole)

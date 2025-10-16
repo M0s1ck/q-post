@@ -2,6 +2,7 @@ package repository
 
 import (
 	"auth-service/internal/domain"
+	"auth-service/internal/domain/refresh"
 	"context"
 	"fmt"
 	"gorm.io/gorm"
@@ -15,9 +16,9 @@ func NewRefreshTokenRepo(dbs *gorm.DB) *RefreshTokenRepo {
 	return &RefreshTokenRepo{db: dbs}
 }
 
-func (repo *RefreshTokenRepo) Create(refreshModel *domain.RefreshToken) error {
+func (repo *RefreshTokenRepo) Create(refreshModel *refresh.RefreshToken) error {
 	ctx := context.Background()
-	err := gorm.G[domain.RefreshToken](repo.db).Create(ctx, refreshModel)
+	err := gorm.G[refresh.RefreshToken](repo.db).Create(ctx, refreshModel)
 
 	if err != nil {
 		return fmt.Errorf("%w: create refresh token: %v", domain.UnhandledDbError, err)

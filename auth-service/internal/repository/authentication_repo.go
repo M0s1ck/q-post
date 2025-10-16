@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"auth-service/internal/domain/user"
 	"context"
 	"errors"
 	"fmt"
@@ -22,9 +23,9 @@ func NewAuthenticationRepo(dbs *gorm.DB) *AuthenticationRepo {
 	return &AuthenticationRepo{db: dbs}
 }
 
-func (repo *AuthenticationRepo) Create(authUser *domain.AuthUser) error {
+func (repo *AuthenticationRepo) Create(authUser *user.AuthUser) error {
 	ctx := context.Background()
-	err := gorm.G[domain.AuthUser](repo.db).Create(ctx, authUser)
+	err := gorm.G[user.AuthUser](repo.db).Create(ctx, authUser)
 
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) && pgErr.Code == duplicateErrCode {
@@ -38,9 +39,9 @@ func (repo *AuthenticationRepo) Create(authUser *domain.AuthUser) error {
 	return nil
 }
 
-func (repo *AuthenticationRepo) GetByUsername(username string) (*domain.AuthUser, error) {
+func (repo *AuthenticationRepo) GetByUsername(username string) (*user.AuthUser, error) {
 	ctx := context.Background()
-	user, err := gorm.G[domain.AuthUser](repo.db).Where("username = ?", username).First(ctx)
+	user, err := gorm.G[user.AuthUser](repo.db).Where("username = ?", username).First(ctx)
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, fmt.Errorf("%w: get by username: %v", domain.ErrNotFound, err)
@@ -53,10 +54,10 @@ func (repo *AuthenticationRepo) GetByUsername(username string) (*domain.AuthUser
 	return &user, nil
 }
 
-func (repo *AuthenticationRepo) UpdateRole(userId uuid.UUID, newRole domain.UserRole) error {
+func (repo *AuthenticationRepo) UpdateRole(userId uuid.UUID, newRole user.UserRole) error {
 	ctx := context.Background()
 
-	affected, err := gorm.G[domain.AuthUser](repo.db).Where("id = ?", userId).
+	affected, err := gorm.G[user.AuthUser](repo.db).Where("id = ?", userId).
 		Update(ctx, "role", newRole)
 
 	if affected == 0 {
