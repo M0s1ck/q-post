@@ -1,9 +1,9 @@
 package usecase
 
 import (
-	"auth-service/internal/domain/user"
 	"github.com/google/uuid"
 
+	"auth-service/internal/domain/user"
 	"auth-service/internal/dto"
 )
 
@@ -12,17 +12,17 @@ type UserCreator interface {
 }
 
 type SignUpUsecase struct {
-	userCreator       UserCreator
-	refreshTokenSavor RefreshTokenSaver
-	accessTokenIssuer AccessTokenIssuer
+	userCreator           UserCreator
+	refreshTokenGenerator RefreshTokenGenerator
+	accessTokenIssuer     AccessTokenIssuer
 }
 
-func NewSignUpUsecase(userCreator UserCreator, refreshTokenSavor RefreshTokenSaver,
+func NewSignUpUsecase(userCreator UserCreator, refreshTokenGenerator RefreshTokenGenerator,
 	accessTokenIssuer AccessTokenIssuer) *SignUpUsecase {
 	return &SignUpUsecase{
-		userCreator:       userCreator,
-		refreshTokenSavor: refreshTokenSavor,
-		accessTokenIssuer: accessTokenIssuer,
+		userCreator:           userCreator,
+		refreshTokenGenerator: refreshTokenGenerator,
+		accessTokenIssuer:     accessTokenIssuer,
 	}
 }
 
@@ -40,7 +40,7 @@ func (uc *SignUpUsecase) SignUpWithUsername(usPass *dto.UsernamePass) (*dto.User
 
 	// TODO: Call here to user-service
 
-	refreshErr := uc.refreshTokenSavor.GenerateNewAndSave(userId)
+	refresh, refreshErr := uc.refreshTokenGenerator.GenerateNewAndSave(userId)
 
 	if refreshErr != nil {
 		return nil, refreshErr
@@ -52,5 +52,11 @@ func (uc *SignUpUsecase) SignUpWithUsername(usPass *dto.UsernamePass) (*dto.User
 		return nil, tokenErr
 	}
 
-	return &dto.UserIdAndTokens{UserId: userId, AccessToken: accessToken}, nil
+	response := dto.UserIdAndTokens{
+		UserId:       userId,
+		AccessToken:  accessToken,
+		RefreshToken: refresh,
+	}
+
+	return &response, nil
 }

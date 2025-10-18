@@ -1,11 +1,13 @@
 package repository
 
 import (
-	"auth-service/internal/domain"
-	"auth-service/internal/domain/refresh"
 	"context"
 	"fmt"
+
 	"gorm.io/gorm"
+
+	"auth-service/internal/domain"
+	"auth-service/internal/domain/refresh"
 )
 
 type RefreshTokenRepo struct {

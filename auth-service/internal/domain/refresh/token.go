@@ -1,8 +1,9 @@
 package refresh
 
 import (
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 const refreshTokenLifeSpan = time.Hour * 24 * 30

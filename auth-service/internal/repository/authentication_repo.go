@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"auth-service/internal/domain/user"
 	"context"
 	"errors"
 	"fmt"
@@ -11,6 +10,7 @@ import (
 	"gorm.io/gorm"
 
 	"auth-service/internal/domain"
+	"auth-service/internal/domain/user"
 )
 
 const duplicateErrCode = "23505"

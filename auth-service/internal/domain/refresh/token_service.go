@@ -16,16 +16,20 @@ func NewRefreshTokenService(repo TokenSaver, hasher Hasher) *TokenService {
 	}
 }
 
-func (serv *TokenService) GenerateNewAndSave(userId uuid.UUID) error {
+func (serv *TokenService) GenerateNewAndSave(userId uuid.UUID) (uuid.UUID, error) {
 	token := uuid.New()
 	tokenHash, hashErr := serv.hasher.Hash(token.String())
 
 	if hashErr != nil {
-		return hashErr
+		return uuid.Nil, hashErr
 	}
 
 	tokenModel := NewRefreshToken(tokenHash, userId)
-
 	dbErr := serv.repo.Create(&tokenModel)
-	return dbErr
+
+	if dbErr != nil {
+		return uuid.Nil, dbErr
+	}
+
+	return token, nil
 }

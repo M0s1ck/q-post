@@ -8,6 +8,7 @@ type UsernamePass struct {
 }
 
 type UserIdAndTokens struct {
-	UserId      uuid.UUID
-	AccessToken string
+	UserId       uuid.UUID
+	AccessToken  string
+	RefreshToken uuid.UUID
 }

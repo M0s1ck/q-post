@@ -1,55 +1,53 @@
 package usecase
 
 import (
-	"auth-service/internal/domain"
 	"auth-service/internal/domain/user"
 	"auth-service/internal/dto"
 )
 
-type UserGetter interface {
-	GetByUsername(username string) (*user.AuthUser, error)
+type UserVerifier interface {
+	// GetVerifiedByUsername Gets user by username verified by password;
+	// domain.ErrWrongPassword if pass is wrong
+	GetVerifiedByUsername(username string, pass string) (*user.AuthUser, error)
 }
 
 type SignInUsecase struct {
-	repo        UserGetter
-	tokenIssuer AccessTokenIssuer
-	passHasher  StringHasher
+	userVerifier          UserVerifier
+	refreshTokenGenerator RefreshTokenGenerator
+	tokenIssuer           AccessTokenIssuer
 }
 
-func NewSignInUsecase(repo UserGetter, tokenIssuer AccessTokenIssuer, passHasher StringHasher) *SignInUsecase {
+func NewSignInUsecase(verifier UserVerifier, refreshTokenGenerator RefreshTokenGenerator, tokenIssuer AccessTokenIssuer) *SignInUsecase {
 	return &SignInUsecase{
-		repo:        repo,
-		tokenIssuer: tokenIssuer,
-		passHasher:  passHasher,
+		userVerifier:          verifier,
+		refreshTokenGenerator: refreshTokenGenerator,
+		tokenIssuer:           tokenIssuer,
 	}
 }
 
 func (uc *SignInUsecase) SignInByUsername(usPass *dto.UsernamePass) (*dto.UserIdAndTokens, error) {
-	user, err := uc.repo.GetByUsername(usPass.Username)
+	us, err := uc.userVerifier.GetVerifiedByUsername(usPass.Username, usPass.Password)
 
 	if err != nil {
 		return nil, err
 	}
 
-	valid, hashErr := uc.passHasher.Verify(usPass.Password, user.HashedPassword)
-
-	if hashErr != nil {
-		return nil, hashErr
-	}
-
-	if !valid {
-		return nil, domain.ErrWrongPassword
-	}
-
-	accessToken, tokenErr := uc.tokenIssuer.IssueAccessToken(user.Id, user.Username, user.Role)
+	accessToken, tokenErr := uc.tokenIssuer.IssueAccessToken(us.Id, us.Username, us.Role)
 
 	if tokenErr != nil {
 		return nil, tokenErr
 	}
 
+	refresh, refreshErr := uc.refreshTokenGenerator.GenerateNewAndSave(us.Id)
+
+	if refreshErr != nil {
+		return nil, refreshErr
+	}
+
 	response := dto.UserIdAndTokens{
-		UserId:      user.Id,
-		AccessToken: accessToken,
+		UserId:       us.Id,
+		AccessToken:  accessToken,
+		RefreshToken: refresh,
 	}
 
 	return &response, nil

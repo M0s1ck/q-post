@@ -1,11 +1,12 @@
 package jwt
 
 import (
-	"auth-service/internal/domain/user"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+
+	"auth-service/internal/domain/user"
 )
 
 const (

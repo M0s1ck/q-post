@@ -1,11 +1,12 @@
 package jwt
 
 import (
-	"auth-service/internal/domain/user"
 	"fmt"
 	"reflect"
 
 	"github.com/golang-jwt/jwt/v5"
+
+	"auth-service/internal/domain/user"
 )
 
 type JwtValidator struct {

@@ -1,10 +1,6 @@
 package app
 
 import (
-	"auth-service/internal/domain/refresh"
-	"auth-service/internal/domain/user"
-	"auth-service/internal/service/hash"
-	jwt2 "auth-service/internal/service/jwt"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -15,8 +11,12 @@ import (
 
 	"auth-service/api"
 	"auth-service/internal/delivery"
+	"auth-service/internal/domain/refresh"
+	"auth-service/internal/domain/user"
 	infradb "auth-service/internal/infra/db"
 	"auth-service/internal/repository"
+	"auth-service/internal/service/hash"
+	myjwt "auth-service/internal/service/jwt"
 	"auth-service/internal/usecase"
 )
 
@@ -30,14 +30,14 @@ func BuildGinEngine() *gin.Engine {
 
 	jwtSecret := os.Getenv("JWT_SECRET_KEY")
 	signMethod := jwt.SigningMethodHS256
-	tokenIssuer := jwt2.NewJwtIssuer(jwtSecret, signMethod)
-	tokenValidator := jwt2.NewJwtValidator(jwtSecret, signMethod)
+	tokenIssuer := myjwt.NewJwtIssuer(jwtSecret, signMethod)
+	tokenValidator := myjwt.NewJwtValidator(jwtSecret, signMethod)
 
 	userServ := user.NewAuthUserService(authenRepo, strHasher)
 	refreshServ := refresh.NewRefreshTokenService(refreshRepo, strHasher)
 
 	signUpUc := usecase.NewSignUpUsecase(userServ, refreshServ, tokenIssuer)
-	signInUc := usecase.NewSignInUsecase(authenRepo, tokenIssuer, strHasher)
+	signInUc := usecase.NewSignInUsecase(userServ, refreshServ, tokenIssuer)
 	accessRolesUc := usecase.NewAccessRolesUsecase(authenRepo, tokenValidator)
 
 	signUpHandler := delivery.NewSignUpHandler(signUpUc)

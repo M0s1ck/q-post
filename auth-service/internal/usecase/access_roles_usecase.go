@@ -1,12 +1,12 @@
 package usecase
 
 import (
-	"auth-service/internal/domain/user"
 	"fmt"
 
 	"github.com/google/uuid"
 
 	"auth-service/internal/domain"
+	"auth-service/internal/domain/user"
 )
 
 type UserRoleUpdater interface {
