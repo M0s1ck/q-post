@@ -1,8 +1,9 @@
-package usecase
+package auth
 
 import (
 	"auth-service/internal/domain/user"
 	"auth-service/internal/dto"
+	"auth-service/internal/usecase"
 )
 
 type UserVerifier interface {
@@ -14,10 +15,10 @@ type UserVerifier interface {
 type SignInUsecase struct {
 	userVerifier          UserVerifier
 	refreshTokenGenerator RefreshTokenGenerator
-	tokenIssuer           AccessTokenIssuer
+	tokenIssuer           usecase.AccessTokenIssuer
 }
 
-func NewSignInUsecase(verifier UserVerifier, refreshTokenGenerator RefreshTokenGenerator, tokenIssuer AccessTokenIssuer) *SignInUsecase {
+func NewSignInUsecase(verifier UserVerifier, refreshTokenGenerator RefreshTokenGenerator, tokenIssuer usecase.AccessTokenIssuer) *SignInUsecase {
 	return &SignInUsecase{
 		userVerifier:          verifier,
 		refreshTokenGenerator: refreshTokenGenerator,

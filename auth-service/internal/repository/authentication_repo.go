@@ -39,9 +39,24 @@ func (repo *AuthenticationRepo) Create(authUser *user.AuthUser) error {
 	return nil
 }
 
+func (repo *AuthenticationRepo) GetById(id uuid.UUID) (*user.AuthUser, error) {
+	ctx := context.Background()
+	us, err := gorm.G[user.AuthUser](repo.db).Where("id = ?", id).First(ctx)
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("%w: get auth user by id: %v", domain.ErrNotFound, err)
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("%w: get auth user by id: %v", domain.UnhandledDbError, err)
+	}
+
+	return &us, nil
+}
+
 func (repo *AuthenticationRepo) GetByUsername(username string) (*user.AuthUser, error) {
 	ctx := context.Background()
-	user, err := gorm.G[user.AuthUser](repo.db).Where("username = ?", username).First(ctx)
+	us, err := gorm.G[user.AuthUser](repo.db).Where("username = ?", username).First(ctx)
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, fmt.Errorf("%w: get by username: %v", domain.ErrNotFound, err)
@@ -51,7 +66,7 @@ func (repo *AuthenticationRepo) GetByUsername(username string) (*user.AuthUser, 
 		return nil, fmt.Errorf("%w: get by username: %v", domain.UnhandledDbError, err)
 	}
 
-	return &user, nil
+	return &us, nil
 }
 
 func (repo *AuthenticationRepo) UpdateRole(userId uuid.UUID, newRole user.UserRole) error {

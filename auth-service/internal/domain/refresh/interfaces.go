@@ -1,9 +1,11 @@
 package refresh
 
-type Hasher interface {
-	Hash(str string) (string, error)
+type TokenRepo interface {
+	Create(refreshModel *RefreshToken) error
+	GetByTokenHash(tokenHash string) (*RefreshToken, error)
+	RemoveByTokenHash(tokenHash string) error
 }
 
-type TokenSaver interface {
-	Create(refreshModel *RefreshToken) error
+type Hasher interface {
+	Hash(str string) (string, error)
 }

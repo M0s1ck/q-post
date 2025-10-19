@@ -1,4 +1,4 @@
-package delivery
+package handlers
 
 import (
 	"errors"
@@ -9,14 +9,14 @@ import (
 
 	"auth-service/internal/domain"
 	"auth-service/internal/dto"
-	"auth-service/internal/usecase"
+	"auth-service/internal/usecase/auth"
 )
 
 type SignUpHandler struct {
-	signUpUc *usecase.SignUpUsecase
+	signUpUc *auth.SignUpUsecase
 }
 
-func NewSignUpHandler(signUpUc *usecase.SignUpUsecase) *SignUpHandler {
+func NewSignUpHandler(signUpUc *auth.SignUpUsecase) *SignUpHandler {
 	return &SignUpHandler{signUpUc: signUpUc}
 }
 

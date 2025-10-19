@@ -1,4 +1,4 @@
-package usecase
+package roles
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 
 	"auth-service/internal/domain"
 	"auth-service/internal/domain/user"
+	"auth-service/internal/usecase"
 )
 
 type UserRoleUpdater interface {
@@ -15,10 +16,10 @@ type UserRoleUpdater interface {
 
 type AccessRolesUsecase struct {
 	repo           UserRoleUpdater
-	tokenValidator AccessTokenValidator
+	tokenValidator usecase.AccessTokenValidator
 }
 
-func NewAccessRolesUsecase(rep UserRoleUpdater, tokenValidator AccessTokenValidator) *AccessRolesUsecase {
+func NewAccessRolesUsecase(rep UserRoleUpdater, tokenValidator usecase.AccessTokenValidator) *AccessRolesUsecase {
 	return &AccessRolesUsecase{
 		repo:           rep,
 		tokenValidator: tokenValidator,

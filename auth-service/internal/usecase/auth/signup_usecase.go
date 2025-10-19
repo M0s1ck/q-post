@@ -1,10 +1,11 @@
-package usecase
+package auth
 
 import (
 	"github.com/google/uuid"
 
 	"auth-service/internal/domain/user"
 	"auth-service/internal/dto"
+	"auth-service/internal/usecase"
 )
 
 type UserCreator interface {
@@ -14,11 +15,11 @@ type UserCreator interface {
 type SignUpUsecase struct {
 	userCreator           UserCreator
 	refreshTokenGenerator RefreshTokenGenerator
-	accessTokenIssuer     AccessTokenIssuer
+	accessTokenIssuer     usecase.AccessTokenIssuer
 }
 
 func NewSignUpUsecase(userCreator UserCreator, refreshTokenGenerator RefreshTokenGenerator,
-	accessTokenIssuer AccessTokenIssuer) *SignUpUsecase {
+	accessTokenIssuer usecase.AccessTokenIssuer) *SignUpUsecase {
 	return &SignUpUsecase{
 		userCreator:           userCreator,
 		refreshTokenGenerator: refreshTokenGenerator,

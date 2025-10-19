@@ -7,11 +7,11 @@ import (
 )
 
 type AuthUserService struct {
-	passHasher PassHasher
+	passHasher HasherVerifier
 	repo       AuthUserCreatorGetter
 }
 
-func NewAuthUserService(repo AuthUserCreatorGetter, passHasher PassHasher) *AuthUserService {
+func NewAuthUserService(repo AuthUserCreatorGetter, passHasher HasherVerifier) *AuthUserService {
 	return &AuthUserService{passHasher: passHasher, repo: repo}
 }
 

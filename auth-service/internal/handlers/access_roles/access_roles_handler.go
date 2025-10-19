@@ -1,4 +1,4 @@
-package delivery
+package access_roles
 
 import (
 	"errors"
@@ -10,14 +10,14 @@ import (
 
 	"auth-service/internal/domain"
 	"auth-service/internal/dto"
-	"auth-service/internal/usecase"
+	"auth-service/internal/usecase/roles"
 )
 
 type AccessRolesHandler struct {
-	uCase *usecase.AccessRolesUsecase
+	uCase *roles.AccessRolesUsecase
 }
 
-func NewAccessRolesHandler(uCase *usecase.AccessRolesUsecase) *AccessRolesHandler {
+func NewAccessRolesHandler(uCase *roles.AccessRolesUsecase) *AccessRolesHandler {
 	return &AccessRolesHandler{uCase: uCase}
 }
 
@@ -28,7 +28,7 @@ func (hand *AccessRolesHandler) RegisterHandlers(engine *gin.Engine) {
 // updateUserRole godoc
 //
 //	@Summary		Update user role
-//	@Description	Updates given user's role. Request should be sent by moder/admin (with jwt) to upgrade the role.
+//	@Description	Updates given user's role. Request should be sent by moder/admin (with jwt) to upgrade the role. Variants: user, moder, admin
 //	@Tags			Access Roles
 //	@Accept			json
 //	@Produce		json

@@ -1,4 +1,4 @@
-package delivery
+package handlers
 
 import (
 	"errors"
@@ -9,20 +9,20 @@ import (
 
 	"auth-service/internal/domain"
 	"auth-service/internal/dto"
-	"auth-service/internal/usecase"
+	"auth-service/internal/usecase/auth"
 )
 
-func NewAuthenticationHandler(signInUc *usecase.SignInUsecase) *AuthenticationHandler {
-	return &AuthenticationHandler{
+func NewSignInHandler(signInUc *auth.SignInUsecase) *SignInHandler {
+	return &SignInHandler{
 		signInUc: signInUc,
 	}
 }
 
-type AuthenticationHandler struct {
-	signInUc *usecase.SignInUsecase
+type SignInHandler struct {
+	signInUc *auth.SignInUsecase
 }
 
-func (hand *AuthenticationHandler) RegisterHandlers(engine *gin.Engine) {
+func (hand *SignInHandler) RegisterHandlers(engine *gin.Engine) {
 	engine.POST("/signin/username", hand.signInWithUsername)
 }
 
@@ -40,7 +40,7 @@ func (hand *AuthenticationHandler) RegisterHandlers(engine *gin.Engine) {
 //	@Failure		404	{object}	dto.ErrorResponse
 //	@Failure		500	{object}	dto.ErrorResponse
 //	@Router			/signin/username [post]
-func (hand *AuthenticationHandler) signInWithUsername(c *gin.Context) {
+func (hand *SignInHandler) signInWithUsername(c *gin.Context) {
 	usernamePass := dto.UsernamePass{}
 	parseErr := c.BindJSON(&usernamePass)
 

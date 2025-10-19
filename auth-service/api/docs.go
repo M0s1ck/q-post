@@ -101,6 +101,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/refresh": {
+            "post": {
+                "description": "Takes refresh token, returns jwt if it's valid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Refresh"
+                ],
+                "summary": "Refresh pipeline",
+                "parameters": [
+                    {
+                        "description": "refresh",
+                        "name": "refresh",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RefreshDto"
+                        }
+                    }
+                ],
+                "responses": {
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/signin/username": {
             "post": {
                 "description": "Sign in with username \u0026 password, returns id and jwt.",
@@ -230,10 +276,21 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.RefreshDto": {
+            "type": "object",
+            "properties": {
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.UserIdAndTokens": {
             "type": "object",
             "properties": {
                 "accessToken": {
+                    "type": "string"
+                },
+                "refreshToken": {
                     "type": "string"
                 },
                 "userId": {

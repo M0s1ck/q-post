@@ -10,9 +10,16 @@ definitions:
         example: Error info
         type: string
     type: object
+  dto.RefreshDto:
+    properties:
+      refresh_token:
+        type: string
+    type: object
   dto.UserIdAndTokens:
     properties:
       accessToken:
+        type: string
+      refreshToken:
         type: string
       userId:
         type: string
@@ -86,6 +93,36 @@ paths:
       summary: Service healthcheck
       tags:
       - Health
+  /refresh:
+    post:
+      consumes:
+      - application/json
+      description: Takes refresh token, returns jwt if it's valid
+      parameters:
+      - description: refresh
+        in: body
+        name: refresh
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RefreshDto'
+      produces:
+      - application/json
+      responses:
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Refresh pipeline
+      tags:
+      - Refresh
   /signin/username:
     post:
       consumes:
