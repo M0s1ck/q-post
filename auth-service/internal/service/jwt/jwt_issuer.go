@@ -15,14 +15,16 @@ const (
 )
 
 type JwtIssuer struct {
-	secret     []byte
-	signMethod jwt.SigningMethod
+	userJWTSecret    []byte
+	serviceJWTSecret []byte
+	signMethod       jwt.SigningMethod
 }
 
-func NewJwtIssuer(secret string, signMethod jwt.SigningMethod) *JwtIssuer {
+func NewJwtIssuer(userJWTSecret string, serviceJWTSecret string, signMethod jwt.SigningMethod) *JwtIssuer {
 	return &JwtIssuer{
-		secret:     []byte(secret),
-		signMethod: signMethod,
+		userJWTSecret:    []byte(userJWTSecret),
+		serviceJWTSecret: []byte(serviceJWTSecret),
+		signMethod:       signMethod,
 	}
 }
 
@@ -34,7 +36,7 @@ func (ti *JwtIssuer) IssueAccessToken(id uuid.UUID, username string, role user.U
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(expireTime)),
 	}
 
-	claims := &MyJwtClaims{
+	claims := &UserJwtClaims{
 		Username:         username,
 		Role:             role,
 		RegisteredClaims: &registeredClaims,
@@ -42,7 +44,30 @@ func (ti *JwtIssuer) IssueAccessToken(id uuid.UUID, username string, role user.U
 
 	var token *jwt.Token = jwt.NewWithClaims(ti.signMethod, claims)
 
-	signedToken, err := token.SignedString(ti.secret)
+	signedToken, err := token.SignedString(ti.userJWTSecret)
+
+	if err != nil {
+		return "", err
+	}
+
+	return signedToken, nil
+}
+
+func (ti *JwtIssuer) IssueJwtForApiService() (string, error) {
+	registeredClaims := jwt.RegisteredClaims{
+		Subject:   authServiceBeingIssuer,
+		Issuer:    authServiceBeingIssuer,
+		IssuedAt:  jwt.NewNumericDate(time.Now()),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(expireTime)),
+	}
+
+	claims := &ApiServiceJwtClaims{
+		RegisteredClaims: &registeredClaims,
+	}
+
+	var token *jwt.Token = jwt.NewWithClaims(ti.signMethod, claims)
+
+	signedToken, err := token.SignedString(ti.serviceJWTSecret)
 
 	if err != nil {
 		return "", err

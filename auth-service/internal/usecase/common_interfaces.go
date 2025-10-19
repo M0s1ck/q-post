@@ -13,6 +13,6 @@ type AccessTokenIssuer interface {
 }
 
 type AccessTokenValidator interface {
-	ValidateAccessToken(tokenString string) (*jwt.MyJwtClaims, error)
+	ValidateAccessToken(tokenString string) (*jwt.UserJwtClaims, error)
 	ValidateAccessTokenWithRole(tokenString string, role user.UserRole) (bool, error)
 }

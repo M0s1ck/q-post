@@ -17,6 +17,7 @@ import (
 	healthhand "auth-service/internal/handlers/health"
 	refreshHand "auth-service/internal/handlers/refresh"
 	infradb "auth-service/internal/infra/db"
+	"auth-service/internal/infra/qpost_api_clients"
 	"auth-service/internal/repository"
 	"auth-service/internal/service/hash"
 	myjwt "auth-service/internal/service/jwt"
@@ -28,21 +29,26 @@ import (
 func BuildGinEngine() *gin.Engine {
 	var db *gorm.DB = infradb.ConnectToPostgres()
 
-	authenRepo := repository.NewAuthenticationRepo(db)
-	refreshRepo := repository.NewRefreshTokenRepo(db)
-
 	argonHasher := hash.NewArgonHasher()
 	sha256Hasher := hash.NewSha256Hasher()
 
-	jwtSecret := os.Getenv("JWT_SECRET_KEY")
+	userJwtSecret := os.Getenv("JWT_SECRET_KEY")
+	apiJwtSecret := os.Getenv("API_SECRET_KEY")
 	signMethod := jwt.SigningMethodHS256
-	tokenIssuer := myjwt.NewJwtIssuer(jwtSecret, signMethod)
-	tokenValidator := myjwt.NewJwtValidator(jwtSecret, signMethod)
+	tokenIssuer := myjwt.NewJwtIssuer(userJwtSecret, apiJwtSecret, signMethod)
+	tokenValidator := myjwt.NewJwtValidator(userJwtSecret, signMethod)
+
+	usPort := os.Getenv("USER_SERVICE_PORT")
+	usDomain := os.Getenv("USER_SERVICE_HOST")
+	uServApiClient := qpost_api_clients.NewUserServiceClient(usDomain, usPort, tokenIssuer)
+
+	authenRepo := repository.NewAuthenticationRepo(db)
+	refreshRepo := repository.NewRefreshTokenRepo(db)
 
 	userServ := user.NewAuthUserService(authenRepo, argonHasher)
 	refreshServ := refresh.NewRefreshTokenService(refreshRepo, sha256Hasher)
 
-	signUpUc := authcase.NewSignUpUsecase(userServ, refreshServ, tokenIssuer)
+	signUpUc := authcase.NewSignUpUsecase(userServ, uServApiClient, refreshServ, tokenIssuer)
 	signInUc := authcase.NewSignInUsecase(userServ, refreshServ, tokenIssuer)
 	refreshUc := refreshcase.NewRefreshUsecase(refreshServ, authenRepo, tokenIssuer)
 	accessRolesUc := rolescase.NewAccessRolesUsecase(authenRepo, tokenValidator)

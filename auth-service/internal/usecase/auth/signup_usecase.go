@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"sync"
+
 	"github.com/google/uuid"
 
 	"auth-service/internal/domain/user"
@@ -12,16 +14,22 @@ type UserCreator interface {
 	Create(userId uuid.UUID, username string, pass string, role user.UserRole) error
 }
 
+type CreateUserClient interface {
+	CreateUserRequest(*dto.UserToCreate) error
+}
+
 type SignUpUsecase struct {
 	userCreator           UserCreator
+	createUserClient      CreateUserClient
 	refreshTokenGenerator RefreshTokenGenerator
 	accessTokenIssuer     usecase.AccessTokenIssuer
 }
 
-func NewSignUpUsecase(userCreator UserCreator, refreshTokenGenerator RefreshTokenGenerator,
-	accessTokenIssuer usecase.AccessTokenIssuer) *SignUpUsecase {
+func NewSignUpUsecase(userCreator UserCreator, createUserClient CreateUserClient,
+	refreshTokenGenerator RefreshTokenGenerator, accessTokenIssuer usecase.AccessTokenIssuer) *SignUpUsecase {
 	return &SignUpUsecase{
 		userCreator:           userCreator,
+		createUserClient:      createUserClient,
 		refreshTokenGenerator: refreshTokenGenerator,
 		accessTokenIssuer:     accessTokenIssuer,
 	}
@@ -39,7 +47,13 @@ func (uc *SignUpUsecase) SignUpWithUsername(usPass *dto.UsernamePass) (*dto.User
 		return nil, createErr
 	}
 
-	// TODO: Call here to user-service
+	// Call here to user-service
+	// TODO: update user create in user-service
+	reqDto := &dto.UserToCreate{UserId: userId, Username: username}
+	errChan := make(chan error, 1)
+	waitGroup := &sync.WaitGroup{} // here it's also possible without wait group
+	waitGroup.Add(1)
+	go uc.callToCreateUserInUserService(reqDto, waitGroup, errChan)
 
 	refresh, refreshErr := uc.refreshTokenGenerator.GenerateNewAndSave(userId)
 
@@ -53,6 +67,12 @@ func (uc *SignUpUsecase) SignUpWithUsername(usPass *dto.UsernamePass) (*dto.User
 		return nil, tokenErr
 	}
 
+	waitGroup.Wait()
+	apiErr := <-errChan
+	if apiErr != nil {
+		return nil, apiErr
+	}
+
 	response := dto.UserIdAndTokens{
 		UserId:       userId,
 		AccessToken:  accessToken,
@@ -60,4 +80,10 @@ func (uc *SignUpUsecase) SignUpWithUsername(usPass *dto.UsernamePass) (*dto.User
 	}
 
 	return &response, nil
+}
+
+func (uc *SignUpUsecase) callToCreateUserInUserService(reqDto *dto.UserToCreate, wg *sync.WaitGroup, errChan chan error) {
+	err := uc.createUserClient.CreateUserRequest(reqDto)
+	errChan <- err
+	wg.Done()
 }

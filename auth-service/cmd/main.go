@@ -21,7 +21,7 @@ func main() {
 
 	engine := app.BuildGinEngine()
 
-	addr := ":8088"
+	addr := ":8088" // TODO: take from env
 	err := engine.Run(addr)
 
 	if err != nil {

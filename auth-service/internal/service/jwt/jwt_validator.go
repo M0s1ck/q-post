@@ -21,8 +21,8 @@ func NewJwtValidator(secret string, signMethod jwt.SigningMethod) *JwtValidator 
 	}
 }
 
-func (v *JwtValidator) ValidateAccessToken(tokenString string) (*MyJwtClaims, error) {
-	var claims = MyJwtClaims{}
+func (v *JwtValidator) ValidateAccessToken(tokenString string) (*UserJwtClaims, error) {
+	var claims = UserJwtClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, &claims, v.keyFuncSymmetrical)
 
 	if err != nil {

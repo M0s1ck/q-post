@@ -1,5 +1,8 @@
 package dto
 
+import "github.com/google/uuid"
+
 type UserToCreate struct {
-	Username string
+	UserId   uuid.UUID `json:"userId"`
+	Username string    `json:"username"`
 }

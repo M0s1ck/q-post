@@ -6,8 +6,12 @@ import (
 	"auth-service/internal/domain/user"
 )
 
-type MyJwtClaims struct {
+type UserJwtClaims struct {
 	Username string `json:"username"`
 	Role     user.UserRole
+	*jwt.RegisteredClaims
+}
+
+type ApiServiceJwtClaims struct {
 	*jwt.RegisteredClaims
 }
