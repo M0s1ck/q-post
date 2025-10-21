@@ -1,0 +1,207 @@
+definitions:
+  dto.AccessRole:
+    properties:
+      role:
+        type: string
+    type: object
+  dto.ErrorResponse:
+    properties:
+      message:
+        example: Error info
+        type: string
+    type: object
+  dto.RefreshDto:
+    properties:
+      refresh_token:
+        type: string
+    type: object
+  dto.UserIdAndTokens:
+    properties:
+      accessToken:
+        type: string
+      refreshToken:
+        type: string
+      userId:
+        type: string
+    type: object
+  dto.UsernamePass:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: Gin app for user auth
+  title: QPost auth service
+  version: 1.0.0
+paths:
+  /access-roles/{userId}:
+    post:
+      consumes:
+      - application/json
+      description: Updates given user's role. Request should be sent by moder/admin
+        (with jwt) to upgrade the role.
+      parameters:
+      - description: access_role
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AccessRole'
+      - description: user id
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update user role
+      tags:
+      - Access Roles
+  /health:
+    get:
+      responses:
+        "200":
+          description: OK
+      summary: Service healthcheck
+      tags:
+      - Health
+  /refresh:
+    post:
+      consumes:
+      - application/json
+      description: Takes refresh token, returns jwt if it's valid
+      parameters:
+      - description: refresh
+        in: body
+        name: refresh
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RefreshDto'
+      produces:
+      - application/json
+      responses:
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Refresh pipeline
+      tags:
+      - Refresh
+  /signin/username:
+    post:
+      consumes:
+      - application/json
+      description: Sign in with username & password, returns id and jwt.
+      parameters:
+      - description: user
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UsernamePass'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserIdAndTokens'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Sign in with username & password
+      tags:
+      - Authentication
+  /signup/username:
+    post:
+      consumes:
+      - application/json
+      description: Signs up with username & password, saves to db, returns created
+        id.
+      parameters:
+      - description: user
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UsernamePass'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.UserIdAndTokens'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: Sign up with username & password
+      tags:
+      - Sign up
+schemes:
+- http
+- https
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -16,5 +16,17 @@ services:
       retries: 5
       start_period: 10s
 
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    env_file:
+      - .env
+    ports:
+      - "${AUTH_SERVICE_PORT}:${AUTH_SERVICE_PORT}"
+    depends_on:
+      - psg
+
 volumes:
   pgs-data:
