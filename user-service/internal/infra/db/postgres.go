@@ -2,9 +2,10 @@ package db
 
 import (
 	"fmt"
+	"os"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"os"
 )
 
 const dbConnectionStr = "postgres://postgres:postgres@localhost:5432/q-post?sslmode=disable"

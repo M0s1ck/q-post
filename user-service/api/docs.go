@@ -286,6 +286,9 @@ const docTemplate = `{
         "dto.UserToCreate": {
             "type": "object",
             "properties": {
+                "id": {
+                    "type": "string"
+                },
                 "username": {
                     "type": "string"
                 }

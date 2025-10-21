@@ -5,11 +5,11 @@ import (
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
-	"user-service/internal/repository"
-	"user-service/internal/usecase"
 
 	"user-service/api"
 	"user-service/internal/delivery"
+	"user-service/internal/repository"
+	"user-service/internal/usecase"
 )
 
 func BuildGinEngine(db *gorm.DB) *gin.Engine {

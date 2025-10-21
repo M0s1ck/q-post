@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"github.com/google/uuid"
+
 	"user-service/internal/dto"
 	"user-service/internal/mapper"
 	"user-service/internal/repository"
@@ -28,8 +29,8 @@ func (useCase *UserUseCase) GetById(id uuid.UUID) (*dto.UserResponse, error) {
 
 func (useCase *UserUseCase) Create(userDto *dto.UserToCreate) (*dto.UuidOnlyResponse, error) {
 	user := mapper.UserFromCreateRequest(userDto)
-	id, err := useCase.userRepo.Create(user)
-	return &dto.UuidOnlyResponse{Id: id}, err
+	err := useCase.userRepo.Create(user)
+	return &dto.UuidOnlyResponse{Id: user.Id}, err
 }
 
 func (useCase *UserUseCase) UpdateDetails(id uuid.UUID, details *dto.UserDetailsToUpdate) error {

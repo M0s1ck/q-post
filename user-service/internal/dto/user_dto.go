@@ -1,8 +1,9 @@
 package dto
 
 import (
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type UserResponse struct {
@@ -17,6 +18,7 @@ type UserResponse struct {
 }
 
 type UserToCreate struct {
+	Id       uuid.UUID
 	Username string
 }
 

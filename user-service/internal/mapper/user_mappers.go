@@ -2,6 +2,7 @@ package mapper
 
 import (
 	"time"
+
 	"user-service/internal/domain"
 	"user-service/internal/dto"
 )
@@ -23,6 +24,7 @@ func GetUserDto(user *domain.User) *dto.UserResponse {
 
 func UserFromCreateRequest(dto *dto.UserToCreate) *domain.User {
 	user := domain.User{
+		Id:        dto.Id,
 		Username:  dto.Username,
 		CreatedAt: time.Now(),
 	}

@@ -3,10 +3,12 @@ package delivery
 import (
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"log"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+
 	"user-service/internal/domain"
 	"user-service/internal/dto"
 	"user-service/internal/usecase"

@@ -4,9 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
+
 	"user-service/internal/domain"
 	"user-service/internal/dto"
 )
@@ -36,21 +38,20 @@ func (repo *UserRepo) GetById(id uuid.UUID) (*domain.User, error) {
 	return &user, nil
 }
 
-func (repo *UserRepo) Create(user *domain.User) (uuid.UUID, error) {
-	user.Id = uuid.New()
+func (repo *UserRepo) Create(user *domain.User) error {
 	ctx := context.Background()
 	err := gorm.G[domain.User](repo.db).Create(ctx, user)
 
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) && pgErr.Code == duplicateErrCode {
-		return uuid.Nil, fmt.Errorf("%w: create user: %v", domain.ErrDuplicate, err)
+		return fmt.Errorf("%w: create user: %v", domain.ErrDuplicate, err)
 	}
 
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("%w: create user: %v", domain.UnhandledDbError, err)
+		return fmt.Errorf("%w: create user: %v", domain.UnhandledDbError, err)
 	}
 
-	return user.Id, nil
+	return nil
 }
 
 func (repo *UserRepo) UpdateDetails(id uuid.UUID, details *dto.UserDetailsToUpdate) error {

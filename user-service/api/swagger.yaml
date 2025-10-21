@@ -35,6 +35,8 @@ definitions:
     type: object
   dto.UserToCreate:
     properties:
+      id:
+        type: string
       username:
         type: string
     type: object

@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"gorm.io/gorm"
 	"log"
+
+	"gorm.io/gorm"
 
 	"user-service/internal/app"
 	"user-service/internal/infra/db"
