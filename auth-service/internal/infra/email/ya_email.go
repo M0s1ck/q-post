@@ -7,9 +7,9 @@ import (
 // Prolly won't be used
 
 func ConnectToEmail() {
-	from := "moskin.arceniy@yandex.ru" // TODO: все в env
+	from := "myemail"
 	pass := "akmufvfvxtfmfxan"
-	to := []string{"senyamoskin@gmail.com"} // TODO: понять что происходит вообще
+	to := []string{"anotheremail"}
 
 	msg := []byte("To: " + to[0] + "\r\n" +
 		"Subject: Привет!\r\n" +

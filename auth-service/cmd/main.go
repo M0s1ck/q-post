@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"auth-service/internal/app"
 )
@@ -21,7 +22,7 @@ func main() {
 
 	engine := app.BuildGinEngine()
 
-	addr := ":8088" // TODO: take from env
+	addr := ":" + os.Getenv("AUTH_SERVICE_PORT")
 	err := engine.Run(addr)
 
 	if err != nil {

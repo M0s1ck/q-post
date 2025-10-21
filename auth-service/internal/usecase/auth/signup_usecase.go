@@ -48,7 +48,6 @@ func (uc *SignUpUsecase) SignUpWithUsername(usPass *dto.UsernamePass) (*dto.User
 	}
 
 	// Call here to user-service
-	// TODO: update user create in user-service
 	reqDto := &dto.UserToCreate{UserId: userId, Username: username}
 	errChan := make(chan error, 1)
 	waitGroup := &sync.WaitGroup{} // here it's also possible without wait group

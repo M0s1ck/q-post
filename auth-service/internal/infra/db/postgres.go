@@ -24,7 +24,7 @@ func ConnectToPostgres() *gorm.DB {
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
-		os.Exit(1) //TODO: ask gpt what is this
+		os.Exit(1)
 	}
 
 	sqlDB, _ := db.DB()

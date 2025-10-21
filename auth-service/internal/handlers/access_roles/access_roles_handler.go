@@ -46,7 +46,7 @@ func (hand *AccessRolesHandler) updateUserRole(c *gin.Context) {
 	var dtoRole dto.AccessRole
 	parseErr := c.BindJSON(&dtoRole)
 
-	var idStr string = c.Param("userId") // TODO: test happy path(moder moder), test expired jwt
+	var idStr string = c.Param("userId")
 	userId, uuidFormErr := uuid.Parse(idStr)
 
 	jwt := c.GetHeader("Authorization")

@@ -37,7 +37,7 @@ func (uc *AccessRolesUsecase) UpdateUserRole(userId uuid.UUID, newRoleStr string
 	var claimedRole user.UserRole = claims.Role
 
 	if claimedRole == user.RoleUser || claimedRole == user.RoleModer && newRole == user.RoleAdmin {
-		return fmt.Errorf("%w: can't update role %v having role %v", domain.ErrWeakRole, newRoleStr, user.RoleNamesById[claimedRole]) // TODO: test
+		return fmt.Errorf("%w: can't update role %v having role %v", domain.ErrWeakRole, newRoleStr, user.RoleNamesById[claimedRole])
 	}
 
 	repoErr := uc.repo.UpdateRole(userId, newRole)
