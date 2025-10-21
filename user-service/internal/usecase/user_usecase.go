@@ -1,23 +1,32 @@
 package usecase
 
 import (
+	"fmt"
+
 	"github.com/google/uuid"
 
+	"user-service/internal/domain"
 	"user-service/internal/dto"
 	"user-service/internal/mapper"
 	"user-service/internal/repository"
 )
 
+const authServiceIssuer = "auth-service"
+
 type UserUseCase struct {
-	userRepo *repository.UserRepo
+	userRepo             *repository.UserRepo
+	accessTokenValidator AccessTokenApiValidator
 }
 
-func NewUserUseCase(userRepo *repository.UserRepo) *UserUseCase {
-	return &UserUseCase{userRepo: userRepo}
+func NewUserUseCase(userRepo *repository.UserRepo, jwtValidator AccessTokenApiValidator) *UserUseCase {
+	return &UserUseCase{
+		userRepo:             userRepo,
+		accessTokenValidator: jwtValidator,
+	}
 }
 
-func (useCase *UserUseCase) GetById(id uuid.UUID) (*dto.UserResponse, error) {
-	user, err := useCase.userRepo.GetById(id)
+func (u *UserUseCase) GetById(id uuid.UUID) (*dto.UserResponse, error) {
+	user, err := u.userRepo.GetById(id)
 
 	if err != nil {
 		return nil, err
@@ -27,18 +36,23 @@ func (useCase *UserUseCase) GetById(id uuid.UUID) (*dto.UserResponse, error) {
 	return userDto, err
 }
 
-func (useCase *UserUseCase) Create(userDto *dto.UserToCreate) (*dto.UuidOnlyResponse, error) {
+func (u *UserUseCase) Create(userDto *dto.UserToCreate, token string) (*dto.UuidOnlyResponse, error) {
+	tokenErr := u.accessTokenValidator.ValidateTokenIssuedAt(token, authServiceIssuer) // TODO: test
+	if tokenErr != nil {
+		return nil, fmt.Errorf("%w: %v", domain.ErrInvalidToken, tokenErr)
+	}
+
 	user := mapper.UserFromCreateRequest(userDto)
-	err := useCase.userRepo.Create(user)
+	err := u.userRepo.Create(user)
 	return &dto.UuidOnlyResponse{Id: user.Id}, err
 }
 
-func (useCase *UserUseCase) UpdateDetails(id uuid.UUID, details *dto.UserDetailsToUpdate) error {
-	err := useCase.userRepo.UpdateDetails(id, details)
+func (u *UserUseCase) UpdateDetails(id uuid.UUID, details *dto.UserDetailsToUpdate) error {
+	err := u.userRepo.UpdateDetails(id, details)
 	return err
 }
 
-func (useCase *UserUseCase) Delete(id uuid.UUID) error {
-	err := useCase.userRepo.Delete(id)
+func (u *UserUseCase) Delete(id uuid.UUID) error {
+	err := u.userRepo.Delete(id)
 	return err
 }

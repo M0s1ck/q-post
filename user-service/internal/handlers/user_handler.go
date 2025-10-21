@@ -1,10 +1,11 @@
-package delivery
+package handlers
 
 import (
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -78,8 +79,10 @@ func (uHand *UserHandler) Get(c *gin.Context) {
 //	@Param   	    user body       dto.UserToCreate true "user"
 //	@Success		201	{object}	dto.UuidOnlyResponse
 //	@Failure		400	{object}	dto.ErrorResponse
+//	@Failure		403	{object}	dto.ErrorResponse
 //	@Failure		409	{object}	dto.ErrorResponse
 //	@Failure		500	{object}	dto.ErrorResponse
+//	@Security		BearerAuth
 //	@Router			/users/create [post]
 func (uHand *UserHandler) Create(c *gin.Context) {
 	userToCreate := dto.UserToCreate{}
@@ -90,7 +93,18 @@ func (uHand *UserHandler) Create(c *gin.Context) {
 		return
 	}
 
-	uuidResponse, err := uHand.userUseCase.Create(&userToCreate)
+	token, err := getAuthorizationToken(c)
+	if err != nil {
+		respondErr(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	uuidResponse, err := uHand.userUseCase.Create(&userToCreate, token)
+
+	if errors.Is(err, domain.ErrInvalidToken) {
+		respondErr(c, http.StatusForbidden, err.Error())
+		return
+	}
 
 	if errors.Is(err, domain.ErrDuplicate) {
 		respondErr(c, http.StatusConflict, fmt.Sprintf("User with username=%s already exists", userToCreate.Username))
@@ -197,4 +211,18 @@ func respondErr(c *gin.Context, code int, message string) {
 	}
 
 	c.JSON(code, errResponse)
+}
+
+func getAuthorizationToken(c *gin.Context) (string, error) {
+	jwt := c.GetHeader("Authorization")
+
+	if strings.HasPrefix(jwt, "Bearer ") {
+		jwt = strings.TrimPrefix(jwt, "Bearer ")
+	}
+
+	if jwt == "" {
+		return "", errors.New("no authorization token found")
+	}
+
+	return jwt, nil
 }

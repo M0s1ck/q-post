@@ -16,6 +16,9 @@ import (
 // @version 1.0.0
 // @description Gin app to deal with users
 // @schemes http https
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 	var psg *gorm.DB = db.ConnectToPostgres()
 	log.Println(psg)
