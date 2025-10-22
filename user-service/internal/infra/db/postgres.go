@@ -2,15 +2,17 @@ package db
 
 import (
 	"fmt"
+	"log"
+	"net/url"
 	"os"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-const dbConnectionStr = "postgres://postgres:postgres@localhost:5432/q-post?sslmode=disable"
-
 func ConnectToPostgres() *gorm.DB {
+	dbConnectionStr := getDbConnectionString()
+
 	var psgConf postgres.Config = postgres.Config{
 		DSN:                  dbConnectionStr,
 		PreferSimpleProtocol: true,
@@ -18,7 +20,7 @@ func ConnectToPostgres() *gorm.DB {
 
 	var dialector gorm.Dialector = postgres.New(psgConf)
 
-	db, err := gorm.Open(dialector) // TODO: here pointer to config for some reason
+	db, err := gorm.Open(dialector)
 
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
@@ -29,4 +31,22 @@ func ConnectToPostgres() *gorm.DB {
 	fmt.Println(sqlDB.Stats())
 
 	return db
+}
+
+func getDbConnectionString() string {
+	u := &url.URL{
+		Scheme: "postgres",
+		User:   url.UserPassword(os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD")),
+		Host:   os.Getenv("POSTGRES_HOST") + ":" + os.Getenv("POSTGRES_PORT"),
+		Path:   os.Getenv("POSTGRES_DB"),
+	}
+
+	q := u.Query()
+	q.Set("sslmode", "disable")
+	// q.Set("search_path", os.Getenv("POSTGRES_AUTH_SCHEME"))
+	// TODO: maybe set to a specific scheme (rn it's public)
+
+	u.RawQuery = q.Encode()
+	log.Println(u.String())
+	return u.String() // smth like postgres://postgres:postgres@localhost:5432/q-post?sslmode=disable
 }
