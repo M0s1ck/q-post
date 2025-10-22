@@ -24,7 +24,7 @@ func GetUserDto(user *domain.User) *dto.UserResponse {
 
 func UserFromCreateRequest(dto *dto.UserToCreate) *domain.User {
 	user := domain.User{
-		Id:        dto.Id,
+		Id:        dto.UserId,
 		Username:  dto.Username,
 		CreatedAt: time.Now(),
 	}

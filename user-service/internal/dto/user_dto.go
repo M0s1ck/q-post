@@ -18,8 +18,8 @@ type UserResponse struct {
 }
 
 type UserToCreate struct {
-	Id       uuid.UUID
-	Username string
+	UserId   uuid.UUID `json:"userId"`
+	Username string    `json:"username"`
 }
 
 type UserDetailsToUpdate struct {

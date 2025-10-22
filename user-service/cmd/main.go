@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"gorm.io/gorm"
 
@@ -20,12 +21,12 @@ import (
 // @in header
 // @name Authorization
 func main() {
+	app.LoadEnv()
 	var psg *gorm.DB = db.ConnectToPostgres()
-	log.Println(psg)
 
 	engine := app.BuildGinEngine(psg)
 
-	addr := ":8080"
+	addr := ":" + os.Getenv("USER_SERVICE_PORT")
 	err := engine.Run(addr)
 
 	if err != nil {
