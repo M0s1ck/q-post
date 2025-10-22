@@ -141,7 +141,12 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Updates user details by their id",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates user details by their id, requires user's jwt, date is in the YYYY-MM-DD format",
                 "consumes": [
                     "application/json"
                 ],
@@ -166,7 +171,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UserDetailsToUpdate"
+                            "$ref": "#/definitions/dto.UserDetailStr"
                         }
                     }
                 ],
@@ -176,6 +181,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/dto.ErrorResponse"
                         }
@@ -251,17 +262,20 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UserDetailsToUpdate": {
+        "dto.UserDetailStr": {
             "type": "object",
             "properties": {
                 "birthday": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2006-01-02"
                 },
                 "description": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "I love ball and films'"
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "John Doe"
                 }
             }
         },
@@ -297,7 +311,7 @@ const docTemplate = `{
         "dto.UserToCreate": {
             "type": "object",
             "properties": {
-                "id": {
+                "userId": {
                     "type": "string"
                 },
                 "username": {

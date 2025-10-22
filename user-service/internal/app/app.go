@@ -18,7 +18,7 @@ import (
 
 func BuildGinEngine(db *gorm.DB) *gin.Engine {
 	apiJwtSecret := os.Getenv("API_SECRET_KEY")
-	userJwtSecret := os.Getenv("USER_SECRET_KEY")
+	userJwtSecret := os.Getenv("JWT_SECRET_KEY")
 	signMethod := jwt.SigningMethodHS256
 	jwtValidator := myjwt.NewValidator(userJwtSecret, apiJwtSecret, signMethod)
 

@@ -1,13 +1,16 @@
 package mapper
 
 import (
+	"fmt"
 	"time"
 
-	"user-service/internal/domain"
+	"user-service/internal/domain/user"
 	"user-service/internal/dto"
 )
 
-func GetUserDto(user *domain.User) *dto.UserResponse {
+const dateLayout = "2006-01-02"
+
+func GetUserDto(user *user.User) *dto.UserResponse {
 	userDto := dto.UserResponse{
 		Id:           user.Id,
 		Username:     user.Username,
@@ -22,12 +25,29 @@ func GetUserDto(user *domain.User) *dto.UserResponse {
 	return &userDto
 }
 
-func UserFromCreateRequest(dto *dto.UserToCreate) *domain.User {
-	user := domain.User{
+func UserFromCreateRequest(dto *dto.UserToCreate) *user.User {
+	us := user.User{
 		Id:        dto.UserId,
 		Username:  dto.Username,
 		CreatedAt: time.Now(),
 	}
 
-	return &user
+	return &us
+}
+
+func GetUserDetailsFromDto(usDetDto *dto.UserDetailStr) (*user.UserDetails, error) {
+	details := user.UserDetails{
+		Name:        usDetDto.Name,
+		Description: usDetDto.Description,
+	}
+
+	if usDetDto.Birthday != nil {
+		bday, dateErr := time.Parse(dateLayout, *usDetDto.Birthday)
+		if dateErr != nil {
+			return nil, fmt.Errorf("user details dto: expected date format 2006-01-02: %v", dateErr)
+		}
+		details.Birthday = &bday
+	}
+
+	return &details, nil
 }

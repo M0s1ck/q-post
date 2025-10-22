@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 type Validator struct {
@@ -36,7 +37,22 @@ func (v *Validator) ValidateApiToken(tokenStr string) (*ApiServiceClaims, error)
 	return &claims, nil
 }
 
-func (v *Validator) ValidateTokenIssuedAt(jwt string, issuer string) error {
+func (v *Validator) ValidateUserToken(tokenStr string) (*UserClaims, error) {
+	var claims = UserClaims{}
+	token, err := jwt.ParseWithClaims(tokenStr, &claims, v.keyFuncUserSymmetrical)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !token.Valid {
+		return nil, fmt.Errorf("invalid token")
+	}
+
+	return &claims, nil
+}
+
+func (v *Validator) ValidateApiTokenIssuedAt(jwt string, issuer string) error {
 	claims, err := v.ValidateApiToken(jwt)
 
 	if err != nil {
@@ -44,7 +60,21 @@ func (v *Validator) ValidateTokenIssuedAt(jwt string, issuer string) error {
 	}
 
 	if claims.Issuer != issuer {
-		return fmt.Errorf("user create: unexpected jwt issuer: %v", claims.Issuer)
+		return fmt.Errorf("user service: unexpected jwt issuer: %v", claims.Issuer)
+	}
+
+	return nil
+}
+
+func (v *Validator) ValidateUserTokenBySubId(jwt string, userId uuid.UUID) error {
+	claims, err := v.ValidateUserToken(jwt)
+
+	if err != nil {
+		return err
+	}
+
+	if claims.Subject != userId.String() {
+		return fmt.Errorf("unexpected jwt userId: %v", claims.Subject)
 	}
 
 	return nil
@@ -53,6 +83,14 @@ func (v *Validator) ValidateTokenIssuedAt(jwt string, issuer string) error {
 func (v *Validator) keyFuncApiSymmetrical(token *jwt.Token) (any, error) {
 	if reflect.TypeOf(token.Method) == reflect.TypeOf(v.signMethod) {
 		return v.apiSecretKey, nil
+	}
+
+	return nil, fmt.Errorf("unexpected signing method: %v", token.Method.Alg())
+}
+
+func (v *Validator) keyFuncUserSymmetrical(token *jwt.Token) (any, error) {
+	if reflect.TypeOf(token.Method) == reflect.TypeOf(v.signMethod) {
+		return v.userSecret, nil
 	}
 
 	return nil, fmt.Errorf("unexpected signing method: %v", token.Method.Alg())

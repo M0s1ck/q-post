@@ -123,16 +123,18 @@ func (uHand *UserHandler) Create(c *gin.Context) {
 // UpdateDetails godoc
 //
 //	@Summary		Update user details
-//	@Description	Updates user details by their id
+//	@Description	Updates user details by their id, requires user's jwt, date is in the YYYY-MM-DD format
 //	@Tags			Users
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	 path		string	true	"user id"
-//	@Param   	    user body       dto.UserDetailsToUpdate true "details"
+//	@Param   	    user body       dto.UserDetailStr true "details"
 //	@Success		204
 //	@Failure		400	{object}	dto.ErrorResponse
+//	@Failure		403	{object}	dto.ErrorResponse
 //	@Failure		404	{object}	dto.ErrorResponse
 //	@Failure		500	{object}	dto.ErrorResponse
+//	@Security		BearerAuth
 //	@Router			/users/{id} [put]
 func (uHand *UserHandler) UpdateDetails(c *gin.Context) {
 	var idStr string = c.Param("id")
@@ -143,15 +145,31 @@ func (uHand *UserHandler) UpdateDetails(c *gin.Context) {
 		return
 	}
 
-	var details dto.UserDetailsToUpdate
-	bindErr := c.BindJSON(&details)
+	var userDetails dto.UserDetailStr
+	bindErr := c.BindJSON(&userDetails)
 
 	if bindErr != nil {
 		respondErr(c, http.StatusBadRequest, bindErr.Error())
 		return
 	}
 
-	err := uHand.userUseCase.UpdateDetails(id, &details)
+	token, tokenErr := getAuthorizationToken(c)
+	if tokenErr != nil {
+		respondErr(c, http.StatusBadRequest, tokenErr.Error())
+		return
+	}
+
+	err := uHand.userUseCase.UpdateDetails(id, &userDetails, token)
+
+	if errors.Is(err, domain.ErrInvalidDto) {
+		respondErr(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if errors.Is(err, domain.ErrInvalidToken) {
+		respondErr(c, http.StatusForbidden, err.Error())
+		return
+	}
 
 	if errors.Is(err, domain.ErrNotFound) {
 		respondErr(c, http.StatusNotFound, fmt.Sprintf("User with id=%s was not found", idStr))

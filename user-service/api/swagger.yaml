@@ -5,13 +5,16 @@ definitions:
         example: Error info
         type: string
     type: object
-  dto.UserDetailsToUpdate:
+  dto.UserDetailStr:
     properties:
       birthday:
+        example: "2006-01-02"
         type: string
       description:
+        example: I love ball and films'
         type: string
       name:
+        example: John Doe
         type: string
     type: object
   dto.UserResponse:
@@ -35,7 +38,7 @@ definitions:
     type: object
   dto.UserToCreate:
     properties:
-      id:
+      userId:
         type: string
       username:
         type: string
@@ -126,7 +129,8 @@ paths:
     put:
       consumes:
       - application/json
-      description: Updates user details by their id
+      description: Updates user details by their id, requires user's jwt, date is
+        in the YYYY-MM-DD format
       parameters:
       - description: user id
         in: path
@@ -138,7 +142,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/dto.UserDetailsToUpdate'
+          $ref: '#/definitions/dto.UserDetailStr'
       produces:
       - application/json
       responses:
@@ -146,6 +150,10 @@ paths:
           description: No Content
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
           schema:
             $ref: '#/definitions/dto.ErrorResponse'
         "404":
@@ -156,6 +164,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Update user details
       tags:
       - Users

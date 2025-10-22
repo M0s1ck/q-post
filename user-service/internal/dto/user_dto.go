@@ -22,8 +22,8 @@ type UserToCreate struct {
 	Username string    `json:"username"`
 }
 
-type UserDetailsToUpdate struct {
-	Name        *string
-	Description *string
-	Birthday    *time.Time
+type UserDetailStr struct {
+	Name        *string `json:"name" example:"John Doe"`
+	Description *string `json:"description" example:"I love ball and films'"`
+	Birthday    *string `json:"birthday" example:"2006-01-02"`
 }
