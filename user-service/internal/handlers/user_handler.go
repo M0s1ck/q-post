@@ -25,13 +25,14 @@ type UserHandler struct {
 }
 
 func (uHand *UserHandler) RegisterHandlers(engine *gin.Engine) {
-	engine.GET("/users/:id", uHand.Get)
+	engine.GET("/users/:id", uHand.GetById)
 	engine.POST("/users/create", uHand.Create)
 	engine.PUT("/users/:id", uHand.UpdateDetails)
 	engine.DELETE("/users/:id", uHand.Delete)
+	engine.GET("/users/me", uHand.GetMe)
 }
 
-// Get godoc
+// GetById godoc
 //
 //	@Summary		Get user by id
 //	@Description	Get user by id
@@ -44,7 +45,7 @@ func (uHand *UserHandler) RegisterHandlers(engine *gin.Engine) {
 //	@Failure		404	{object}	dto.ErrorResponse
 //	@Failure		500	{object}	dto.ErrorResponse
 //	@Router			/users/{id} [get]
-func (uHand *UserHandler) Get(c *gin.Context) {
+func (uHand *UserHandler) GetById(c *gin.Context) {
 	var idStr string = c.Param("id")
 	id, uuidFormErr := uuid.Parse(idStr)
 
@@ -56,7 +57,7 @@ func (uHand *UserHandler) Get(c *gin.Context) {
 	userDto, err := uHand.userUseCase.GetById(id)
 
 	if errors.Is(err, domain.ErrNotFound) {
-		respondErr(c, http.StatusNotFound, fmt.Sprintf("User with id=%s was not found", idStr))
+		respondErr(c, http.StatusNotFound, err.Error())
 		return
 	}
 
@@ -123,11 +124,10 @@ func (uHand *UserHandler) Create(c *gin.Context) {
 // UpdateDetails godoc
 //
 //	@Summary		Update user details
-//	@Description	Updates user details by their id, requires user's jwt, date is in the YYYY-MM-DD format
+//	@Description	Updates user whose id is in jwt, date is in the YYYY-MM-DD format
 //	@Tags			Users
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	 path		string	true	"user id"
 //	@Param   	    user body       dto.UserDetailStr true "details"
 //	@Success		204
 //	@Failure		400	{object}	dto.ErrorResponse
@@ -137,14 +137,6 @@ func (uHand *UserHandler) Create(c *gin.Context) {
 //	@Security		BearerAuth
 //	@Router			/users/{id} [put]
 func (uHand *UserHandler) UpdateDetails(c *gin.Context) {
-	var idStr string = c.Param("id")
-	id, uuidFormErr := uuid.Parse(idStr)
-
-	if uuidFormErr != nil {
-		respondErr(c, http.StatusBadRequest, uuidFormErr.Error())
-		return
-	}
-
 	var userDetails dto.UserDetailStr
 	bindErr := c.BindJSON(&userDetails)
 
@@ -159,7 +151,7 @@ func (uHand *UserHandler) UpdateDetails(c *gin.Context) {
 		return
 	}
 
-	err := uHand.userUseCase.UpdateDetails(id, &userDetails, token)
+	err := uHand.userUseCase.UpdateDetails(&userDetails, token)
 
 	if errors.Is(err, domain.ErrInvalidDto) {
 		respondErr(c, http.StatusBadRequest, err.Error())
@@ -172,7 +164,7 @@ func (uHand *UserHandler) UpdateDetails(c *gin.Context) {
 	}
 
 	if errors.Is(err, domain.ErrNotFound) {
-		respondErr(c, http.StatusNotFound, fmt.Sprintf("User with id=%s was not found", idStr))
+		respondErr(c, http.StatusNotFound, err.Error())
 		return
 	}
 
@@ -221,6 +213,48 @@ func (uHand *UserHandler) Delete(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
+}
+
+// GetMe godoc
+//
+//	@Summary		Get me
+//	@Description	Gets user whose id is in given token
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	dto.UserResponse
+//	@Failure		400	{object}	dto.ErrorResponse
+//	@Failure		403	{object}	dto.ErrorResponse
+//	@Failure		404	{object}	dto.ErrorResponse
+//	@Failure		500	{object}	dto.ErrorResponse
+//	@Router			/users/me [get]
+//	@Security		BearerAuth
+func (uHand *UserHandler) GetMe(c *gin.Context) {
+	token, tokenErr := getAuthorizationToken(c)
+	if tokenErr != nil {
+		respondErr(c, http.StatusBadRequest, tokenErr.Error())
+		return
+	}
+
+	userDto, err := uHand.userUseCase.GetMe(token)
+
+	if errors.Is(err, domain.ErrInvalidToken) {
+		respondErr(c, http.StatusForbidden, err.Error())
+		return
+	}
+
+	if errors.Is(err, domain.ErrNotFound) {
+		respondErr(c, http.StatusNotFound, err.Error())
+		return
+	}
+
+	if err != nil {
+		respondErr(c, http.StatusInternalServerError, err.Error())
+		log.Println("Unexpected err: ", err)
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, *userDto)
 }
 
 func respondErr(c *gin.Context, code int, message string) {

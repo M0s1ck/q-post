@@ -36,6 +36,15 @@ func (u *UserUseCase) GetById(id uuid.UUID) (*dto.UserResponse, error) {
 	return userDto, err
 }
 
+func (u *UserUseCase) GetMe(token string) (*dto.UserResponse, error) {
+	userId, tokenErr := u.accessTokenValidator.ValidateUserTokenAndGetId(token)
+	if tokenErr != nil {
+		return nil, fmt.Errorf("%w: %v", domain.ErrInvalidToken, tokenErr)
+	}
+
+	return u.GetById(userId)
+}
+
 func (u *UserUseCase) Create(userDto *dto.UserToCreate, token string) (*dto.UuidOnlyResponse, error) {
 	tokenErr := u.accessTokenValidator.ValidateApiTokenIssuedAt(token, authServiceIssuer)
 	if tokenErr != nil {
@@ -47,13 +56,13 @@ func (u *UserUseCase) Create(userDto *dto.UserToCreate, token string) (*dto.Uuid
 	return &dto.UuidOnlyResponse{Id: user.Id}, err
 }
 
-func (u *UserUseCase) UpdateDetails(id uuid.UUID, userDetailsDto *dto.UserDetailStr, token string) error {
+func (u *UserUseCase) UpdateDetails(userDetailsDto *dto.UserDetailStr, token string) error {
 	details, dtoErr := mapper.GetUserDetailsFromDto(userDetailsDto)
 	if dtoErr != nil {
 		return fmt.Errorf("%w: %v", domain.ErrInvalidDto, dtoErr)
 	}
 
-	tokenErr := u.accessTokenValidator.ValidateUserTokenBySubId(token, id)
+	id, tokenErr := u.accessTokenValidator.ValidateUserTokenAndGetId(token)
 	if tokenErr != nil {
 		return fmt.Errorf("%w: %v", domain.ErrInvalidToken, tokenErr)
 	}

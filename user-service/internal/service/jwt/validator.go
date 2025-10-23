@@ -80,6 +80,21 @@ func (v *Validator) ValidateUserTokenBySubId(jwt string, userId uuid.UUID) error
 	return nil
 }
 
+func (v *Validator) ValidateUserTokenAndGetId(jwt string) (uuid.UUID, error) {
+	claims, err := v.ValidateUserToken(jwt)
+
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	id, err := uuid.Parse(claims.Subject)
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	return id, nil
+}
+
 func (v *Validator) keyFuncApiSymmetrical(token *jwt.Token) (any, error) {
 	if reflect.TypeOf(token.Method) == reflect.TypeOf(v.signMethod) {
 		return v.apiSecretKey, nil

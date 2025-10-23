@@ -129,14 +129,8 @@ paths:
     put:
       consumes:
       - application/json
-      description: Updates user details by their id, requires user's jwt, date is
-        in the YYYY-MM-DD format
+      description: Updates user whose id is in jwt, date is in the YYYY-MM-DD format
       parameters:
-      - description: user id
-        in: path
-        name: id
-        required: true
-        type: string
       - description: details
         in: body
         name: user
@@ -207,6 +201,39 @@ paths:
       security:
       - BearerAuth: []
       summary: Create new user
+      tags:
+      - Users
+  /users/me:
+    get:
+      consumes:
+      - application/json
+      description: Gets user whose id is in given token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get me
       tags:
       - Users
 schemes:
