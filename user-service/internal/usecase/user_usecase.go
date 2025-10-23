@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 
 	"user-service/internal/domain"
+	"user-service/internal/domain/user"
 	"user-service/internal/dto"
 	"user-service/internal/mapper"
 	"user-service/internal/repository"
@@ -71,9 +72,12 @@ func (u *UserUseCase) UpdateDetails(userDetailsDto *dto.UserDetailStr, token str
 	return err
 }
 
-// TODO: here will be with sub
+func (u *UserUseCase) Delete(id uuid.UUID, token string) error {
+	tokenErr := u.accessTokenValidator.ValidateUserTokenBySubIdOrRole(token, id, user.RoleAdmin)
+	if tokenErr != nil {
+		return fmt.Errorf("%w: %v", domain.ErrInvalidToken, tokenErr)
+	}
 
-func (u *UserUseCase) Delete(id uuid.UUID) error {
 	err := u.userRepo.Delete(id)
 	return err
 }

@@ -27,7 +27,7 @@ type UserHandler struct {
 func (uHand *UserHandler) RegisterHandlers(engine *gin.Engine) {
 	engine.GET("/users/:id", uHand.GetById)
 	engine.POST("/users/create", uHand.Create)
-	engine.PUT("/users/:id", uHand.UpdateDetails)
+	engine.PUT("/users/me", uHand.UpdateDetails)
 	engine.DELETE("/users/:id", uHand.Delete)
 	engine.GET("/users/me", uHand.GetMe)
 }
@@ -187,8 +187,10 @@ func (uHand *UserHandler) UpdateDetails(c *gin.Context) {
 //	@Param			id	 path		string	true	"user id"
 //	@Success		204
 //	@Failure		400	{object}	dto.ErrorResponse
+//	@Failure		403	{object}	dto.ErrorResponse
 //	@Failure		404	{object}	dto.ErrorResponse
 //	@Failure		500	{object}	dto.ErrorResponse
+//	@Security		BearerAuth
 //	@Router			/users/{id} [delete]
 func (uHand *UserHandler) Delete(c *gin.Context) {
 	var idStr string = c.Param("id")
@@ -199,7 +201,18 @@ func (uHand *UserHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	err := uHand.userUseCase.Delete(id)
+	token, tokenErr := getAuthorizationToken(c)
+	if tokenErr != nil {
+		respondErr(c, http.StatusBadRequest, tokenErr.Error())
+		return
+	}
+
+	err := uHand.userUseCase.Delete(id, token)
+
+	if errors.Is(err, domain.ErrInvalidToken) {
+		respondErr(c, http.StatusForbidden, err.Error())
+		return
+	}
 
 	if errors.Is(err, domain.ErrNotFound) {
 		respondErr(c, http.StatusNotFound, fmt.Sprintf("User with id=%s was not found", idStr))

@@ -6,6 +6,8 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+
+	"user-service/internal/domain/user"
 )
 
 type Validator struct {
@@ -66,6 +68,21 @@ func (v *Validator) ValidateApiTokenIssuedAt(jwt string, issuer string) error {
 	return nil
 }
 
+func (v *Validator) ValidateUserTokenAndGetId(jwt string) (uuid.UUID, error) {
+	claims, err := v.ValidateUserToken(jwt)
+
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	id, err := uuid.Parse(claims.Subject)
+	if err != nil {
+		return uuid.Nil, err
+	}
+
+	return id, nil
+}
+
 func (v *Validator) ValidateUserTokenBySubId(jwt string, userId uuid.UUID) error {
 	claims, err := v.ValidateUserToken(jwt)
 
@@ -80,19 +97,18 @@ func (v *Validator) ValidateUserTokenBySubId(jwt string, userId uuid.UUID) error
 	return nil
 }
 
-func (v *Validator) ValidateUserTokenAndGetId(jwt string) (uuid.UUID, error) {
+func (v *Validator) ValidateUserTokenBySubIdOrRole(jwt string, userId uuid.UUID, role user.GlobalRole) error {
 	claims, err := v.ValidateUserToken(jwt)
 
 	if err != nil {
-		return uuid.Nil, err
+		return err
 	}
 
-	id, err := uuid.Parse(claims.Subject)
-	if err != nil {
-		return uuid.Nil, err
+	if claims.Role != role && claims.Subject != userId.String() {
+		return fmt.Errorf("unexpected jwt userId or weak role: %v", claims.Subject)
 	}
 
-	return id, nil
+	return nil
 }
 
 func (v *Validator) keyFuncApiSymmetrical(token *jwt.Token) (any, error) {
