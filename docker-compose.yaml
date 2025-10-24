@@ -28,5 +28,17 @@ services:
     depends_on:
       - psg
 
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    env_file:
+      - .env
+    ports:
+      - "${USER_SERVICE_PORT}:${USER_SERVICE_PORT}"
+    depends_on:
+      - psg
+
 volumes:
   pgs-data:

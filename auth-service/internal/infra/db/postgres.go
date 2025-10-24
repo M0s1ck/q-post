@@ -34,10 +34,17 @@ func ConnectToPostgres() *gorm.DB {
 }
 
 func getDbConnectionString() string {
+	var host string
+	if os.Getenv("IN_DOCKER") == "1" {
+		host = os.Getenv("POSTGRES_HOST")
+	} else {
+		host = "localhost"
+	}
+
 	u := &url.URL{
 		Scheme: "postgres",
 		User:   url.UserPassword(os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD")),
-		Host:   os.Getenv("POSTGRES_HOST") + ":" + os.Getenv("POSTGRES_PORT"),
+		Host:   host + ":" + os.Getenv("POSTGRES_PORT"),
 		Path:   os.Getenv("POSTGRES_DB"),
 	}
 
@@ -49,3 +56,6 @@ func getDbConnectionString() string {
 	log.Println(u.String())
 	return u.String() // smth like postgres://postgres:postgres@localhost:5432/q-post?sslmode=disable&search_path=auth"
 }
+
+// postgres://postgres:postgres@:5432/q-post?search_path=auth&sslmode=disable
+// postgres://postgres:postgres@psg:5432/q-post?sslmode=disable
