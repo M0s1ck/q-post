@@ -30,6 +30,11 @@ const docTemplate = `{
         },
         "/users/create": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Creates a new user, saves him to db, returns created id.",
                 "consumes": [
                     "application/json"
@@ -65,8 +70,66 @@ const docTemplate = `{
                             "$ref": "#/definitions/dto.ErrorResponse"
                         }
                     },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
                     "409": {
                         "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Gets user whose id is in given token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get me",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.UserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/dto.ErrorResponse"
                         }
@@ -130,7 +193,12 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Updates user details by their id",
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates user whose id is in jwt, date is in the YYYY-MM-DD format",
                 "consumes": [
                     "application/json"
                 ],
@@ -143,19 +211,12 @@ const docTemplate = `{
                 "summary": "Update user details",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "user id",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
                         "description": "details",
                         "name": "user",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UserDetailsToUpdate"
+                            "$ref": "#/definitions/dto.UserDetailStr"
                         }
                     }
                 ],
@@ -165,6 +226,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/dto.ErrorResponse"
                         }
@@ -184,6 +251,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Removes user by their id",
                 "consumes": [
                     "application/json"
@@ -214,6 +286,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/dto.ErrorResponse"
                         }
                     },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ErrorResponse"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
@@ -240,17 +318,20 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UserDetailsToUpdate": {
+        "dto.UserDetailStr": {
             "type": "object",
             "properties": {
                 "birthday": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2006-01-02"
                 },
                 "description": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "I love ball and films'"
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "John Doe"
                 }
             }
         },
@@ -286,6 +367,9 @@ const docTemplate = `{
         "dto.UserToCreate": {
             "type": "object",
             "properties": {
+                "userId": {
+                    "type": "string"
+                },
                 "username": {
                     "type": "string"
                 }
@@ -299,6 +383,13 @@ const docTemplate = `{
                     "example": "1214a280-1162-408a-918f-5cb9300194ce"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

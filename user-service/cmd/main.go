@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
-	"gorm.io/gorm"
 	"log"
+	"os"
+
+	"gorm.io/gorm"
 
 	"user-service/internal/app"
 	"user-service/internal/infra/db"
@@ -15,13 +17,16 @@ import (
 // @version 1.0.0
 // @description Gin app to deal with users
 // @schemes http https
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
+	app.LoadEnv()
 	var psg *gorm.DB = db.ConnectToPostgres()
-	log.Println(psg)
 
 	engine := app.BuildGinEngine(psg)
 
-	addr := ":8080"
+	addr := ":" + os.Getenv("USER_SERVICE_PORT")
 	err := engine.Run(addr)
 
 	if err != nil {

@@ -1,8 +1,9 @@
 package dto
 
 import (
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type UserResponse struct {
@@ -17,11 +18,12 @@ type UserResponse struct {
 }
 
 type UserToCreate struct {
-	Username string
+	UserId   uuid.UUID `json:"userId"`
+	Username string    `json:"username"`
 }
 
-type UserDetailsToUpdate struct {
-	Name        *string
-	Description *string
-	Birthday    *time.Time
+type UserDetailStr struct {
+	Name        *string `json:"name" example:"John Doe"`
+	Description *string `json:"description" example:"I love ball and films'"`
+	Birthday    *string `json:"birthday" example:"2006-01-02"`
 }
