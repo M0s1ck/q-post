@@ -56,8 +56,8 @@ jobs:
 
       - name: Create schemas
         run: |
-          psql -h localhost -U ${{ secrets.POSTGRES_USER }} -d q-post -c "CREATE SCHEMA IF NOT EXISTS auth;"
-          psql -h localhost -U ${{ secrets.POSTGRES_USER }} -d q-post -c "CREATE SCHEMA IF NOT EXISTS community;"
+          PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h localhost -U ${{ secrets.POSTGRES_USER }} -d q-post -c "CREATE SCHEMA IF NOT EXISTS auth;"
+          PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h localhost -U ${{ secrets.POSTGRES_USER }} -d q-post -c "CREATE SCHEMA IF NOT EXISTS community;"
 
       - name: Bring up services
         run: docker compose up
