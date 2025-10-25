@@ -59,8 +59,13 @@ jobs:
           PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h localhost -U ${{ secrets.POSTGRES_USER }} -d q-post -c "CREATE SCHEMA IF NOT EXISTS auth;"
           PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h localhost -U ${{ secrets.POSTGRES_USER }} -d q-post -c "CREATE SCHEMA IF NOT EXISTS community;"
 
+      - name: Run migrations
+        run: |
+          migrate -path auth-service/internal/infra/db/migrations -database "postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@${{ vars.POSTGRES_HOST }}:${{ vars.POSTGRES_PORT }}/${{ secrets.POSTGRES_DB }}?sslmode=disable&search_path=${{ vars.POSTGRES_AUTH_SCHEME }}" up
+          migrate -path user-service/internal/infra/db/migrations -database "postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@${{ vars.POSTGRES_HOST }}:${{ vars.POSTGRES_PORT }}/${{ secrets.POSTGRES_DB }}?sslmode=disable&search_path=${{ vars.POSTGRES_COMMUNITY_SCHEME }}" up
+
       - name: Bring up services
-        run: docker compose up
+        run: docker compose up -d
 
       - name: Wait for services
         run: sleep 10
