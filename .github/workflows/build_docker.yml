@@ -48,21 +48,21 @@ jobs:
       - name: Build containers
         run: docker compose build
 
-      - name: Bring up postgres
+      - name: Bring up postgre db
         run: docker compose up psg -d
 
-      - name: Wait for postgres
+      - name: Wait for postgre db
         run: sleep 10
 
       - name: Create schemas
         run: |
-          PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h localhost -U ${{ secrets.POSTGRES_USER }} -d q-post -c "CREATE SCHEMA IF NOT EXISTS auth;"
-          PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h localhost -U ${{ secrets.POSTGRES_USER }} -d q-post -c "CREATE SCHEMA IF NOT EXISTS community;"
+          PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h localhost -U ${{ secrets.POSTGRES_USER }} -d q-post -c "CREATE SCHEMA IF NOT EXISTS ${{ vars.POSTGRES_AUTH_SCHEME }};"
+          PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }} psql -h localhost -U ${{ secrets.POSTGRES_USER }} -d q-post -c "CREATE SCHEMA IF NOT EXISTS ${{ vars.POSTGRES_COMMUNITY_SCHEME }};"
 
       - name: Run migrations
         run: |
-          migrate -path auth-service/internal/infra/db/migrations -database "postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@${{ vars.POSTGRES_HOST }}:${{ vars.POSTGRES_PORT }}/${{ secrets.POSTGRES_DB }}?sslmode=disable&search_path=${{ vars.POSTGRES_AUTH_SCHEME }}" up
-          migrate -path user-service/internal/infra/db/migrations -database "postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@${{ vars.POSTGRES_HOST }}:${{ vars.POSTGRES_PORT }}/${{ secrets.POSTGRES_DB }}?sslmode=disable&search_path=${{ vars.POSTGRES_COMMUNITY_SCHEME }}" up
+          migrate -path auth-service/internal/infra/db/migrations -database "postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:${{ vars.POSTGRES_PORT }}/${{ secrets.POSTGRES_DB }}?sslmode=disable&search_path=${{ vars.POSTGRES_AUTH_SCHEME }}" up
+          migrate -path user-service/internal/infra/db/migrations -database "postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:${{ vars.POSTGRES_PORT }}/${{ secrets.POSTGRES_DB }}?sslmode=disable&search_path=${{ vars.POSTGRES_COMMUNITY_SCHEME }}" up
 
       - name: Bring up services
         run: docker compose up -d
@@ -76,8 +76,8 @@ jobs:
 
       - name: Ping health test
         run: |
-          curl --fail http://localhost:8080/health
-          curl --fail http://localhost:8088/health
+          curl --fail http://localhost:${{ vars.USER_SERVICE_PORT }}/health
+          curl --fail http://localhost:${{ vars.AUTH_SERVICE_PORT }}/health
 
       - name: Bring down
         if: always()
