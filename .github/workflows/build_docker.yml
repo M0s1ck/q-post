@@ -19,6 +19,11 @@ jobs:
         with:
           go-version: 1.24
 
+      - name: Install migrate CLI
+        run: |
+          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.1/migrate.linux-amd64.tar.gz | tar xvz
+          sudo mv migrate /usr/local/bin/
+
       - name: Build .env file from GitHub secrets
         run: |
           cat <<EOF > .env
@@ -43,10 +48,21 @@ jobs:
       - name: Build containers
         run: docker compose build
 
-      - name: Bring up containers
-        run: docker compose up -d
+      - name: Bring up postgres
+        run: docker compose up psg -d
 
-      - name: Wait
+      - name: Wait for postgres
+        run: sleep 10
+
+      - name: Create schemas
+        run: |
+          psql -h localhost -U ${{ secrets.POSTGRES_USER }} -d q-post -c "CREATE SCHEMA IF NOT EXISTS auth;"
+          psql -h localhost -U ${{ secrets.POSTGRES_USER }} -d q-post -c "CREATE SCHEMA IF NOT EXISTS community;"
+
+      - name: Bring up services
+        run: docker compose up
+
+      - name: Wait for services
         run: sleep 10
 
       - name: Show logs
