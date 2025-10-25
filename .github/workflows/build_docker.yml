@@ -1,0 +1,62 @@
+name: build_docker.yml
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+
+  runs-on: ubuntu-latest
+
+  steps:
+    - name: Copy source code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: 1.24
+
+    - name: Build .env file from GitHub secrets
+      run: |
+        cat <<EOF > .env
+        POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+        POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+        POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+        POSTGRES_HOST=${{ vars.POSTGRES_HOST }}
+        POSTGRES_PORT=${{ vars.POSTGRES_PORT }}
+        
+        AUTH_SERVICE_HOST=${{ vars.AUTH_SERVICE_HOST }}
+        AUTH_SERVICE_PORT=${{ vars.AUTH_SERVICE_PORT }}
+        POSTGRES_AUTH_SCHEME=${{ vars.POSTGRES_AUTH_SCHEME }}
+        
+        USER_SERVICE_HOST=${{ vars.USER_SERVICE_HOST }}
+        USER_SERVICE_PORT=${{ vars.USER_SERVICE_PORT }}
+        POSTGRES_COMMUNITY_SCHEME=${{ vars.POSTGRES_COMMUNITY_SCHEME }}
+        
+        JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+        API_SECRET_KEY=${{ secrets.API_SECRET_KEY }}
+        EOF
+
+    - name: Build containers
+      run: docker compose build
+
+    - name: Bring up containers
+      run: docker compose up -d
+
+    - name: Wait
+      run: sleep 10
+
+    - name: Show logs
+      if: always()
+      run: docker compose logs --tail=200
+
+    - name: Ping health test
+      run: |
+        curl --fail http://localhost:8080/health
+        curl --fail http://localhost:8088/health
+
+    - name: Bring down
+      if: always()
+      run: docker compose down
