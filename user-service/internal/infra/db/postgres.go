@@ -50,10 +50,10 @@ func getDbConnectionString() string {
 
 	q := u.Query()
 	q.Set("sslmode", "disable")
-	// q.Set("search_path", os.Getenv("POSTGRES_AUTH_SCHEME"))
-	// TODO: maybe set to a specific scheme (rn it's public)
+	q.Set("search_path", os.Getenv("POSTGRES_COMMUNITY_SCHEME"))
 
 	u.RawQuery = q.Encode()
 	log.Println(u.String())
-	return u.String() // smth like postgres://postgres:postgres@localhost:5432/q-post?sslmode=disable
+	// TODO: maybe remove log later for security
+	return u.String() // smth like postgres://postgres:postgres@localhost:5432/q-post?sslmode=disable&search_path=community"
 }
