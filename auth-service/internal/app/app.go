@@ -1,8 +1,6 @@
 package app
 
 import (
-	"os"
-
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	swaggerfiles "github.com/swaggo/files"
@@ -17,6 +15,7 @@ import (
 	healthhand "auth-service/internal/handlers/health"
 	refreshHand "auth-service/internal/handlers/refresh"
 	infradb "auth-service/internal/infra/db"
+	"auth-service/internal/infra/env"
 	"auth-service/internal/infra/qpost_api_clients"
 	"auth-service/internal/repository"
 	"auth-service/internal/service/hash"
@@ -26,21 +25,17 @@ import (
 	rolescase "auth-service/internal/usecase/roles"
 )
 
-func BuildGinEngine() *gin.Engine {
-	var db *gorm.DB = infradb.ConnectToPostgres()
+func BuildGinEngine(envConf *env.Config) *gin.Engine {
+	var db *gorm.DB = infradb.ConnectToPostgres(envConf.PsgConf)
 
 	argonHasher := hash.NewArgonHasher()
 	sha256Hasher := hash.NewSha256Hasher()
 
-	userJwtSecret := os.Getenv("JWT_SECRET_KEY")
-	apiJwtSecret := os.Getenv("API_SECRET_KEY")
 	signMethod := jwt.SigningMethodHS256
-	tokenIssuer := myjwt.NewJwtIssuer(userJwtSecret, apiJwtSecret, signMethod)
-	tokenValidator := myjwt.NewJwtValidator(userJwtSecret, signMethod)
+	tokenIssuer := myjwt.NewJwtIssuer(envConf.JWTSecret, envConf.ApiSecret, signMethod)
+	tokenValidator := myjwt.NewJwtValidator(envConf.JWTSecret, signMethod)
 
-	usPort := os.Getenv("USER_SERVICE_PORT")
-	usDomain := os.Getenv("USER_SERVICE_HOST")
-	uServApiClient := qpost_api_clients.NewUserServiceClient(usDomain, usPort, tokenIssuer)
+	uServApiClient := qpost_api_clients.NewUserServiceClient(envConf.UsServConf.Host, envConf.UsServConf.Port, tokenIssuer)
 
 	authenRepo := repository.NewAuthenticationRepo(db)
 	refreshRepo := repository.NewRefreshTokenRepo(db)

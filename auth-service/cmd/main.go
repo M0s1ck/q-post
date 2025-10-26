@@ -2,9 +2,9 @@ package main
 
 import (
 	"log"
-	"os"
 
 	"auth-service/internal/app"
+	"auth-service/internal/infra/env"
 )
 
 // Swagger attributes:
@@ -18,11 +18,11 @@ import (
 // @name Authorization
 func main() {
 	log.Println("Hello, auth!")
-	app.LoadEnv()
+	envConf := env.BuildEnvConfig()
 
-	engine := app.BuildGinEngine()
+	engine := app.BuildGinEngine(envConf)
 
-	addr := ":" + os.Getenv("AUTH_SERVICE_PORT")
+	addr := ":" + envConf.AppPort
 	err := engine.Run(addr)
 
 	if err != nil {
