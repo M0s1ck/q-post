@@ -51,6 +51,3 @@ func getDbConnectionString(conf *env.PostgresConfig) string {
 	log.Println(u.String())
 	return u.String() // smth like postgres://postgres:postgres@localhost:5432/q-post?sslmode=disable&search_path=auth"
 }
-
-// postgres://postgres:postgres@:5432/q-post?search_path=auth&sslmode=disable
-// postgres://postgres:postgres@psg:5432/q-post?sslmode=disable
