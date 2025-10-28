@@ -2,13 +2,12 @@ package db
 
 import (
 	"fmt"
-	"log"
-	"net/url"
-	"os"
-	"user-service/internal/infra/env"
-
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"log"
+	"net/url"
+
+	"user-service/internal/infra/env"
 )
 
 func ConnectToPostgres(conf *env.PostgresConfig) *gorm.DB {
@@ -24,8 +23,7 @@ func ConnectToPostgres(conf *env.PostgresConfig) *gorm.DB {
 	db, err := gorm.Open(dialector)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
-		os.Exit(1)
+		log.Fatalf("Unable to connect to database: %v\n", err)
 	}
 
 	sqlDB, _ := db.DB()

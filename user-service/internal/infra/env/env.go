@@ -35,7 +35,7 @@ func BuildEnvConfig() *Config {
 	psgConf.DB = os.Getenv("POSTGRES_DB")
 	psgConf.Host = os.Getenv("POSTGRES_HOST")
 	psgConf.Port = os.Getenv("POSTGRES_PORT")
-	psgConf.Scheme = os.Getenv("POSTGRES_USER_SCHEME")
+	psgConf.Scheme = os.Getenv("POSTGRES_COMMUNITY_SCHEME")
 
 	if os.Getenv("IN_DOCKER") == "0" {
 		psgConf.Host = "localhost"

@@ -1,9 +1,6 @@
 package app
 
 import (
-	infradb "user-service/internal/infra/db"
-	"user-service/internal/infra/env"
-
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	swaggerfiles "github.com/swaggo/files"
@@ -12,6 +9,8 @@ import (
 
 	"user-service/api"
 	"user-service/internal/handlers"
+	infradb "user-service/internal/infra/db"
+	"user-service/internal/infra/env"
 	"user-service/internal/repository"
 	myjwt "user-service/internal/service/jwt"
 	"user-service/internal/usecase"

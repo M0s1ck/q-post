@@ -3,10 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
-	"user-service/internal/infra/env"
 
 	"user-service/internal/app"
+	"user-service/internal/infra/env"
 )
 
 // Swagger attributes:
@@ -20,10 +19,8 @@ import (
 // @name Authorization
 func main() {
 	envConf := env.BuildEnvConfig()
-
 	engine := app.BuildGinEngine(envConf)
-
-	addr := ":" + os.Getenv(envConf.AppPort)
+	addr := ":" + envConf.AppPort
 	err := engine.Run(addr)
 
 	if err != nil {
