@@ -7,7 +7,7 @@ on:
 
 jobs:
 
-  bring-up-docker:
+  bring-up-docker-on-runner:
     runs-on: ubuntu-latest
 
     steps:
@@ -82,3 +82,58 @@ jobs:
       - name: Bring down
         if: always()
         run: docker compose down
+
+
+  # if succefully builds and runs on runner, deploy to vm
+  build-and-push-to-docker-hub:
+    runs-on: ubuntu-latest
+    needs: bring-up-docker
+    # if: github.ref == 'refs/heads/main'   # Temporary, for tetsing on every branch
+
+    steps:
+      - name: Copy source code
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build images
+        uses: |
+          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/auth-service:latest ./auth-service
+          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/user-service:latest ./user-service           
+
+      - name: Push images to DockerHub  # our container registry
+        uses: |
+          docker push ${{ vars.DOCKERHUB_USERNAME }}/auth-service:latest
+          docker push ${{ vars.DOCKERHUB_USERNAME }}/user-service:latest
+
+
+  # deploy on vm via pulling images froim docker hub and docker compose
+  deploy:
+    needs: build-and-push-to-docker-hub
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Deploy updated services
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            cd opt/q-post
+            sudo docker compose pull
+            
+            sudo docker compose run --rm auth-service \
+            migrate -path auth-service/internal/infra/db/migrations \
+            -database "postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@${{ secrets.POSTGRES_HOST }}:${{ vars.POSTGRES_PORT }}/${{ secrets.POSTGRES_DB }}?sslmode=disable&search_path=${{ vars.POSTGRES_AUTH_SCHEME }}" up
+            
+            sudo docker compose run --rm user-service \
+            migrate -path user-service/internal/infra/db/migrations \
+            -database "postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@${{ secrets.POSTGRES_HOST }}:${{ vars.POSTGRES_PORT }}/${{ secrets.POSTGRES_DB }}?sslmode=disable&search_path=${{ vars.POSTGRES_USER_SCHEME }}" up
+            
+            sudo docker compose up -d
