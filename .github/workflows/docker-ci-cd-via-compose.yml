@@ -126,7 +126,7 @@ jobs:
           key: ${{ secrets.VM_SSH_KEY }}
           script: |
             pwd
-            cd home/${{ secrets.VM_USER }}/q-post
+            cd q-post
             sudo docker compose -f docker-compose.prod.yaml pull
             
             sudo docker compose run --rm auth-service \
