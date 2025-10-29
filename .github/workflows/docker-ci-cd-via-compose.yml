@@ -101,17 +101,17 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build images
-        uses: |
+        run: |
           docker build -t ${{ vars.DOCKERHUB_USERNAME }}/auth-service:latest ./auth-service
           docker build -t ${{ vars.DOCKERHUB_USERNAME }}/user-service:latest ./user-service           
 
       - name: Push images to DockerHub  # our container registry
-        uses: |
+        run: |
           docker push ${{ vars.DOCKERHUB_USERNAME }}/auth-service:latest
           docker push ${{ vars.DOCKERHUB_USERNAME }}/user-service:latest
 
 
-  # deploy on vm via pulling images froim docker hub and docker compose
+  # deploy on vm via pulling images froim DockerHub and docker compose
   deploy:
     needs: build-and-push-to-docker-hub
     runs-on: ubuntu-latest
