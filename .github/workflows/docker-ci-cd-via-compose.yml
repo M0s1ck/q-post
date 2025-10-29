@@ -115,7 +115,7 @@ jobs:
   deploy:
     needs: build-and-push-to-docker-hub
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'  # temp on every branch to test
+    # if: github.ref == 'refs/heads/main'  # temp on every branch to test
 
     steps:
       - name: Deploy updated services
