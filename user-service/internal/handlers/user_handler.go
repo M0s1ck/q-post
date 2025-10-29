@@ -135,7 +135,7 @@ func (uHand *UserHandler) Create(c *gin.Context) {
 //	@Failure		404	{object}	dto.ErrorResponse
 //	@Failure		500	{object}	dto.ErrorResponse
 //	@Security		BearerAuth
-//	@Router			/users/{id} [put]
+//	@Router			/users/me [put]
 func (uHand *UserHandler) UpdateDetails(c *gin.Context) {
 	var userDetails dto.UserDetailStr
 	bindErr := c.BindJSON(&userDetails)

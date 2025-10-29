@@ -1,8 +1,6 @@
 package app
 
 import (
-	"os"
-
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	swaggerfiles "github.com/swaggo/files"
@@ -11,16 +9,18 @@ import (
 
 	"user-service/api"
 	"user-service/internal/handlers"
+	infradb "user-service/internal/infra/db"
+	"user-service/internal/infra/env"
 	"user-service/internal/repository"
 	myjwt "user-service/internal/service/jwt"
 	"user-service/internal/usecase"
 )
 
-func BuildGinEngine(db *gorm.DB) *gin.Engine {
-	apiJwtSecret := os.Getenv("API_SECRET_KEY")
-	userJwtSecret := os.Getenv("JWT_SECRET_KEY")
+func BuildGinEngine(envConf *env.Config) *gin.Engine {
+	var db *gorm.DB = infradb.ConnectToPostgres(envConf.PsgConf)
+
 	signMethod := jwt.SigningMethodHS256
-	jwtValidator := myjwt.NewValidator(userJwtSecret, apiJwtSecret, signMethod)
+	jwtValidator := myjwt.NewValidator(envConf.JWTSecret, envConf.ApiSecret, signMethod)
 
 	userRepo := repository.NewUserRepo(db)
 

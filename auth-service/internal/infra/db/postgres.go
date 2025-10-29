@@ -1,4 +1,4 @@
-package infra
+package db
 
 import (
 	"fmt"
@@ -8,10 +8,12 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	"auth-service/internal/infra/env"
 )
 
-func ConnectToPostgres() *gorm.DB {
-	dbConnectionStr := getDbConnectionString()
+func ConnectToPostgres(conf *env.PostgresConfig) *gorm.DB {
+	dbConnectionStr := getDbConnectionString(conf)
 
 	var psgConf postgres.Config = postgres.Config{
 		DSN:                  dbConnectionStr,
@@ -33,17 +35,17 @@ func ConnectToPostgres() *gorm.DB {
 	return db
 }
 
-func getDbConnectionString() string {
+func getDbConnectionString(conf *env.PostgresConfig) string {
 	u := &url.URL{
 		Scheme: "postgres",
-		User:   url.UserPassword(os.Getenv("POSTGRES_USER"), os.Getenv("POSTGRES_PASSWORD")),
-		Host:   os.Getenv("POSTGRES_HOST") + ":" + os.Getenv("POSTGRES_PORT"),
-		Path:   os.Getenv("POSTGRES_DB"),
+		User:   url.UserPassword(conf.User, conf.Password),
+		Host:   conf.Host + ":" + conf.Port,
+		Path:   conf.DB,
 	}
 
 	q := u.Query()
 	q.Set("sslmode", "disable")
-	q.Set("search_path", os.Getenv("POSTGRES_AUTH_SCHEME"))
+	q.Set("search_path", conf.Scheme)
 
 	u.RawQuery = q.Encode()
 	log.Println(u.String())

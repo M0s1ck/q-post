@@ -132,43 +132,6 @@ paths:
       summary: Get user by id
       tags:
       - Users
-    put:
-      consumes:
-      - application/json
-      description: Updates user whose id is in jwt, date is in the YYYY-MM-DD format
-      parameters:
-      - description: details
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UserDetailStr'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/dto.ErrorResponse'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/dto.ErrorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/dto.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/dto.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Update user details
-      tags:
-      - Users
   /users/create:
     post:
       consumes:
@@ -240,6 +203,43 @@ paths:
       security:
       - BearerAuth: []
       summary: Get me
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Updates user whose id is in jwt, date is in the YYYY-MM-DD format
+      parameters:
+      - description: details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserDetailStr'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update user details
       tags:
       - Users
 schemes:

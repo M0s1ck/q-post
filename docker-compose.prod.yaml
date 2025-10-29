@@ -1,3 +1,4 @@
+# this docker compose pulls images
 services:
   psg:
     image: postgres:17
@@ -17,9 +18,7 @@ services:
       start_period: 10s
 
   auth-service:
-    build:
-      context: ./auth-service
-      dockerfile: Dockerfile
+    image: mos1ck/auth-service:latest
     container_name: auth-service
     env_file:
       - .env
@@ -29,9 +28,7 @@ services:
       - psg
 
   user-service:
-    build:
-      context: ./user-service
-      dockerfile: Dockerfile
+    image: mos1ck/user-service:latest
     container_name: user-service
     env_file:
       - .env

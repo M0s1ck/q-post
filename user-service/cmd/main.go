@@ -3,12 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
-
-	"gorm.io/gorm"
 
 	"user-service/internal/app"
-	"user-service/internal/infra/db"
+	"user-service/internal/infra/env"
 )
 
 // Swagger attributes:
@@ -21,12 +18,9 @@ import (
 // @in header
 // @name Authorization
 func main() {
-	app.LoadEnv()
-	var psg *gorm.DB = db.ConnectToPostgres()
-
-	engine := app.BuildGinEngine(psg)
-
-	addr := ":" + os.Getenv("USER_SERVICE_PORT")
+	envConf := env.BuildEnvConfig()
+	engine := app.BuildGinEngine(envConf)
+	addr := ":" + envConf.AppPort
 	err := engine.Run(addr)
 
 	if err != nil {
