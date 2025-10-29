@@ -1,4 +1,4 @@
-name: Bring up in docker
+name: CI/CD via docker compose
 
 on:
   push:
@@ -87,7 +87,7 @@ jobs:
   # if succefully builds and runs on runner, deploy to vm
   build-and-push-to-docker-hub:
     runs-on: ubuntu-latest
-    needs: bring-up-docker
+    needs: bring-up-docker-on-runner
     # if: github.ref == 'refs/heads/main'   # Temporary, for tetsing on every branch
 
     steps:
