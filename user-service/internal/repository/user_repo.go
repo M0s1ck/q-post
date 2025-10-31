@@ -85,3 +85,18 @@ func (repo *UserRepo) Delete(id uuid.UUID) error {
 
 	return nil
 }
+
+func (repo *UserRepo) GetUsers(ids []uuid.UUID) ([]user.User, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+
+	ctx := context.Background()
+	users, err := gorm.G[user.User](repo.db).Where("id IN ?", ids).Find(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("%w: get users: %v", domain.UnhandledDbError, err)
+	}
+
+	return users, nil
+}

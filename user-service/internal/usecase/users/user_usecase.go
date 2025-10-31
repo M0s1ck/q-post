@@ -2,7 +2,6 @@ package users
 
 import (
 	"fmt"
-	"user-service/internal/usecase"
 
 	"github.com/google/uuid"
 
@@ -10,6 +9,7 @@ import (
 	"user-service/internal/domain/user"
 	"user-service/internal/dto"
 	"user-service/internal/mapper"
+	"user-service/internal/usecase"
 )
 
 const authServiceIssuer = "auth-service"

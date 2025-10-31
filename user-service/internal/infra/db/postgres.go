@@ -2,10 +2,11 @@ package db
 
 import (
 	"fmt"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 	"log"
 	"net/url"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 
 	"user-service/internal/infra/env"
 )

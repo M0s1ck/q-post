@@ -36,6 +36,13 @@ definitions:
       username:
         type: string
     type: object
+  dto.UserSummary:
+    properties:
+      id:
+        type: string
+      username:
+        type: string
+    type: object
   dto.UserToCreate:
     properties:
       userId:
@@ -132,6 +139,51 @@ paths:
       summary: Get user by id
       tags:
       - Users
+  /users/{id}/friends:
+    get:
+      consumes:
+      - application/json
+      description: Returns paginated list of user's friends
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page number (default 0)
+        in: query
+        name: page
+        type: integer
+      - description: Page size (default 20)
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.UserSummary'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user's friends
+      tags:
+      - friends
   /users/create:
     post:
       consumes:

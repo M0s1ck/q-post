@@ -6,13 +6,13 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"user-service/internal/usecase/users"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
 	"user-service/internal/domain"
 	"user-service/internal/dto"
+	"user-service/internal/usecase/users"
 )
 
 func NewUserHandler(userUseCase *users.UserUseCase) *UserHandler {

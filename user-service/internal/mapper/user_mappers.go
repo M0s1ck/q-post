@@ -53,11 +53,11 @@ func GetUserDetailsFromDto(usDetDto *dto.UserDetailStr) (*user.UserDetails, erro
 }
 
 func GetUserSummaries(users []user.User) []dto.UserSummary {
-	var sums []dto.UserSummary
+	var sums = make([]dto.UserSummary, len(users))
 
-	for _, us := range users {
+	for i, us := range users {
 		sum := GetUserSummary(&us)
-		sums = append(sums, *sum)
+		sums[i] = *sum
 	}
 
 	return sums
