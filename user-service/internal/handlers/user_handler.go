@@ -6,22 +6,22 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"user-service/internal/usecase/users"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
 	"user-service/internal/domain"
 	"user-service/internal/dto"
-	"user-service/internal/usecase"
 )
 
-func NewUserHandler(userUseCase *usecase.UserUseCase) *UserHandler {
+func NewUserHandler(userUseCase *users.UserUseCase) *UserHandler {
 	uHandler := UserHandler{userUseCase: userUseCase}
 	return &uHandler
 }
 
 type UserHandler struct {
-	userUseCase *usecase.UserUseCase
+	userUseCase *users.UserUseCase
 }
 
 func (uHand *UserHandler) RegisterHandlers(engine *gin.Engine) {

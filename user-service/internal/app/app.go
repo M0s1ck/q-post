@@ -6,6 +6,7 @@ import (
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
+	"user-service/internal/usecase/users"
 
 	"user-service/api"
 	"user-service/internal/handlers"
@@ -13,7 +14,6 @@ import (
 	"user-service/internal/infra/env"
 	"user-service/internal/repository"
 	myjwt "user-service/internal/service/jwt"
-	"user-service/internal/usecase"
 )
 
 func BuildGinEngine(envConf *env.Config) *gin.Engine {
@@ -24,7 +24,7 @@ func BuildGinEngine(envConf *env.Config) *gin.Engine {
 
 	userRepo := repository.NewUserRepo(db)
 
-	userUseCase := usecase.NewUserUseCase(userRepo, jwtValidator)
+	userUseCase := users.NewUserUseCase(userRepo, jwtValidator)
 
 	userHandler := handlers.NewUserHandler(userUseCase)
 

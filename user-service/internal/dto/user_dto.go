@@ -17,6 +17,11 @@ type UserResponse struct {
 	CreatedAt    time.Time
 }
 
+type UserSummary struct {
+	Id       uuid.UUID
+	Username string
+}
+
 type UserToCreate struct {
 	UserId   uuid.UUID `json:"userId"`
 	Username string    `json:"username"`

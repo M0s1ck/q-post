@@ -1,7 +1,8 @@
-package usecase
+package users
 
 import (
 	"fmt"
+	"user-service/internal/usecase"
 
 	"github.com/google/uuid"
 
@@ -9,17 +10,25 @@ import (
 	"user-service/internal/domain/user"
 	"user-service/internal/dto"
 	"user-service/internal/mapper"
-	"user-service/internal/repository"
 )
 
 const authServiceIssuer = "auth-service"
 
-type UserUseCase struct {
-	userRepo             *repository.UserRepo
-	accessTokenValidator AccessTokenValidator
+type UserRepo interface {
+	GetById(id uuid.UUID) (*user.User, error)
+	Create(us *user.User) error
+	UpdateDetails(id uuid.UUID, details *user.UserDetails) error
+	Delete(id uuid.UUID) error
 }
 
-func NewUserUseCase(userRepo *repository.UserRepo, jwtValidator AccessTokenValidator) *UserUseCase {
+// UserUseCase
+// Basic operations with users
+type UserUseCase struct {
+	userRepo             UserRepo
+	accessTokenValidator usecase.AccessTokenValidator
+}
+
+func NewUserUseCase(userRepo UserRepo, jwtValidator usecase.AccessTokenValidator) *UserUseCase {
 	return &UserUseCase{
 		userRepo:             userRepo,
 		accessTokenValidator: jwtValidator,

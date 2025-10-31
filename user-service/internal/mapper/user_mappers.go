@@ -51,3 +51,21 @@ func GetUserDetailsFromDto(usDetDto *dto.UserDetailStr) (*user.UserDetails, erro
 
 	return &details, nil
 }
+
+func GetUserSummaries(users []user.User) []dto.UserSummary {
+	var sums []dto.UserSummary
+
+	for _, us := range users {
+		sum := GetUserSummary(&us)
+		sums = append(sums, *sum)
+	}
+
+	return sums
+}
+
+func GetUserSummary(us *user.User) *dto.UserSummary {
+	return &dto.UserSummary{
+		Id:       us.Id,
+		Username: us.Username,
+	}
+}

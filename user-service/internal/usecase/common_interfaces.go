@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"github.com/google/uuid"
-
 	"user-service/internal/domain/user"
 )
 
