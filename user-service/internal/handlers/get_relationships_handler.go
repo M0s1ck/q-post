@@ -25,6 +25,7 @@ func NewGetRelationshipsHandler(getFriendsUc *relationships.GetRelationshipsUseC
 func (h *GetRelationshipsHandler) RegisterHandlers(engine *gin.Engine) {
 	engine.GET("/users/:id/friends", h.GetFriends)
 	engine.GET("/users/:id/followers", h.GetFollowers)
+	engine.GET("/users/:id/followees", h.GetFollowees)
 }
 
 // GetFriends godoc
@@ -108,6 +109,54 @@ func (h *GetRelationshipsHandler) GetFollowers(c *gin.Context) {
 	}
 
 	followers, err := h.getRelsUc.GetFollowers(userId, page, pageSize, token)
+
+	if errors.Is(err, domain.ErrInvalidToken) {
+		respondErr(c, http.StatusForbidden, err.Error())
+		return
+	}
+
+	if err != nil {
+		respondErr(c, http.StatusInternalServerError, err.Error())
+		log.Println("Unexpected err: ", err)
+		return
+	}
+
+	c.IndentedJSON(200, followers)
+}
+
+// GetFollowees godoc
+// @Summary      Get user's followees
+// @Description  Returns paginated list of user's followees (those who user follows)
+// @Tags         relationships
+// @Accept       json
+// @Produce      json
+// @Param        id         path      string  true  "User ID"
+// @Param        page       query     int     false "Page number (default 0)"
+// @Param        pageSize   query     int     false "Page size (default 20)"
+// @Success      200 {object} []dto.UserSummary
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      403 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
+// @Router       /users/{id}/followees [get]
+// @Security	 BearerAuth
+func (h *GetRelationshipsHandler) GetFollowees(c *gin.Context) {
+	var idStr = c.Param("id")
+	userId, uuidFormErr := uuid.Parse(idStr)
+
+	if uuidFormErr != nil {
+		respondErr(c, http.StatusBadRequest, uuidFormErr.Error())
+		return
+	}
+
+	page, pageSize := getPaginationParams(c)
+
+	token, tokenErr := getAuthorizationToken(c)
+	if tokenErr != nil {
+		respondErr(c, http.StatusBadRequest, tokenErr.Error())
+		return
+	}
+
+	followers, err := h.getRelsUc.GetFollowees(userId, page, pageSize, token)
 
 	if errors.Is(err, domain.ErrInvalidToken) {
 		respondErr(c, http.StatusForbidden, err.Error())

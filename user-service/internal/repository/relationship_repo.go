@@ -61,6 +61,25 @@ func (f *FriendRepo) GetFollowerIds(userId uuid.UUID, offset int, limit int) ([]
 	return followerIds, nil
 }
 
+func (f *FriendRepo) GetFolloweeIds(userId uuid.UUID, offset int, limit int) ([]uuid.UUID, error) {
+	ctx := context.Background()
+	var followeeIds []uuid.UUID
+
+	err := f.db.WithContext(ctx).
+		Model(&relationship.Relationship{}).
+		Where("follower_id = ? AND are_friends = ?", userId, false).
+		Order("created_at").
+		Offset(offset).
+		Limit(limit).
+		Pluck("followee_id", &followeeIds).Error
+
+	if err != nil {
+		return nil, fmt.Errorf("%w: get followees: %v", domain.UnhandledDbError, err)
+	}
+
+	return followeeIds, nil
+}
+
 func NewFriendRepo(db *gorm.DB) *FriendRepo {
 	return &FriendRepo{db: db}
 }

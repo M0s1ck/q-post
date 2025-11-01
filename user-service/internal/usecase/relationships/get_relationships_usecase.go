@@ -14,6 +14,7 @@ const DefaultPageSize = 20
 type relationshipsGetter interface {
 	GetFriendIds(userId uuid.UUID, offset int, limit int) ([]uuid.UUID, error)
 	GetFollowerIds(userId uuid.UUID, offset int, limit int) ([]uuid.UUID, error)
+	GetFolloweeIds(userId uuid.UUID, offset int, limit int) ([]uuid.UUID, error)
 }
 
 type usersGetter interface {
@@ -21,16 +22,16 @@ type usersGetter interface {
 }
 
 type GetRelationshipsUseCase struct {
-	friendsRepo relationshipsGetter
-	userRepo    usersGetter
-	tokenVal    usecase.AccessTokenValidator
+	relationshipRepo relationshipsGetter
+	userRepo         usersGetter
+	tokenVal         usecase.AccessTokenValidator
 }
 
 func NewGetRelationshipsUseCase(fRepo relationshipsGetter, uRepo usersGetter, tVal usecase.AccessTokenValidator) *GetRelationshipsUseCase {
 	return &GetRelationshipsUseCase{
-		friendsRepo: fRepo,
-		userRepo:    uRepo,
-		tokenVal:    tVal,
+		relationshipRepo: fRepo,
+		userRepo:         uRepo,
+		tokenVal:         tVal,
 	}
 }
 
@@ -42,7 +43,7 @@ func (u *GetRelationshipsUseCase) GetFriends(userId uuid.UUID, page int, pageSiz
 
 	offset := pageSize * page
 
-	friendIds, err := u.friendsRepo.GetFriendIds(userId, offset, pageSize)
+	friendIds, err := u.relationshipRepo.GetFriendIds(userId, offset, pageSize)
 	if err != nil {
 		return nil, err
 	}
@@ -64,12 +65,34 @@ func (u *GetRelationshipsUseCase) GetFollowers(userId uuid.UUID, page int, pageS
 
 	offset := pageSize * page
 
-	followerIds, err := u.friendsRepo.GetFollowerIds(userId, offset, pageSize)
+	followerIds, err := u.relationshipRepo.GetFollowerIds(userId, offset, pageSize)
 	if err != nil {
 		return nil, err
 	}
 
 	followers, err := u.userRepo.GetUsers(followerIds)
+	if err != nil {
+		return nil, err
+	}
+
+	summaries := mapper.GetUserSummaries(followers)
+	return summaries, nil
+}
+
+func (u *GetRelationshipsUseCase) GetFollowees(userId uuid.UUID, page int, pageSize int, token string) ([]dto.UserSummary, error) {
+	tokenErr := u.tokenVal.ValidateUserToken(token)
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
+	offset := pageSize * page
+
+	followeeIds, err := u.relationshipRepo.GetFolloweeIds(userId, offset, pageSize)
+	if err != nil {
+		return nil, err
+	}
+
+	followers, err := u.userRepo.GetUsers(followeeIds)
 	if err != nil {
 		return nil, err
 	}
