@@ -26,6 +26,7 @@ func (h *GetRelationshipsHandler) RegisterHandlers(engine *gin.Engine) {
 	engine.GET("/users/:id/friends", h.GetFriends)
 	engine.GET("/users/:id/followers", h.GetFollowers)
 	engine.GET("/users/:id/followees", h.GetFollowees)
+	engine.GET("/users/:id/relationship", h.GetRelationship)
 }
 
 // GetFriends godoc
@@ -170,4 +171,48 @@ func (h *GetRelationshipsHandler) GetFollowees(c *gin.Context) {
 	}
 
 	c.IndentedJSON(200, followers)
+}
+
+// GetRelationship godoc
+// @Summary      Get relationship status
+// @Description  Returns relationship status of user of given id to user-sender
+// @Tags         relationships
+// @Accept       json
+// @Produce      json
+// @Param        id         path      string  true  "User ID"
+// @Success      200 {object} []dto.RelationshipStatus
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      403 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
+// @Router       /users/{id}/relationship [get]
+// @Security	 BearerAuth
+func (h *GetRelationshipsHandler) GetRelationship(c *gin.Context) {
+	var idStr = c.Param("id")
+	userId, uuidFormErr := uuid.Parse(idStr)
+
+	if uuidFormErr != nil {
+		respondErr(c, http.StatusBadRequest, uuidFormErr.Error())
+		return
+	}
+
+	token, tokenErr := getAuthorizationToken(c)
+	if tokenErr != nil {
+		respondErr(c, http.StatusBadRequest, tokenErr.Error())
+		return
+	}
+
+	relStatus, err := h.getRelsUc.GetRelationshipStatus(userId, token)
+
+	if errors.Is(err, domain.ErrInvalidToken) {
+		respondErr(c, http.StatusForbidden, err.Error())
+		return
+	}
+
+	if err != nil {
+		respondErr(c, http.StatusInternalServerError, err.Error())
+		log.Println("Unexpected err: ", err)
+		return
+	}
+
+	c.IndentedJSON(200, relStatus)
 }

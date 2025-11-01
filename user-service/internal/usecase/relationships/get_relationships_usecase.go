@@ -1,7 +1,10 @@
 package relationships
 
 import (
+	"errors"
 	"github.com/google/uuid"
+	"user-service/internal/domain"
+	"user-service/internal/domain/relationship"
 
 	"user-service/internal/domain/user"
 	"user-service/internal/dto"
@@ -11,7 +14,15 @@ import (
 
 const DefaultPageSize = 20
 
+const (
+	friendshipStatus = "friend"
+	followerStatus   = "follower"
+	followeeStatus   = "followee"
+	nobodyStatus     = "nobody"
+)
+
 type relationshipsGetter interface {
+	GetRelationship(userId1 uuid.UUID, userId2 uuid.UUID) (*relationship.Relationship, error)
 	GetFriendIds(userId uuid.UUID, offset int, limit int) ([]uuid.UUID, error)
 	GetFollowerIds(userId uuid.UUID, offset int, limit int) ([]uuid.UUID, error)
 	GetFolloweeIds(userId uuid.UUID, offset int, limit int) ([]uuid.UUID, error)
@@ -99,4 +110,26 @@ func (u *GetRelationshipsUseCase) GetFollowees(userId uuid.UUID, page int, pageS
 
 	summaries := mapper.GetUserSummaries(followers)
 	return summaries, nil
+}
+
+func (u *GetRelationshipsUseCase) GetRelationshipStatus(userId uuid.UUID, token string) (*dto.RelationshipStatus, error) {
+	senderId, tokenErr := u.tokenVal.ValidateUserTokenAndGetId(token)
+	if tokenErr != nil {
+		return nil, tokenErr
+	}
+
+	rel, err := u.relationshipRepo.GetRelationship(senderId, userId)
+	if errors.Is(err, domain.ErrNotFound) {
+		return &dto.RelationshipStatus{Status: nobodyStatus}, nil
+	}
+
+	if rel.AreFriends {
+		return &dto.RelationshipStatus{Status: friendshipStatus}, nil
+	}
+
+	if userId == rel.FolloweeId {
+		return &dto.RelationshipStatus{Status: followeeStatus}, nil
+	}
+
+	return &dto.RelationshipStatus{Status: followerStatus}, nil
 }

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -78,6 +79,25 @@ func (f *FriendRepo) GetFolloweeIds(userId uuid.UUID, offset int, limit int) ([]
 	}
 
 	return followeeIds, nil
+}
+
+func (f *FriendRepo) GetRelationship(userId1 uuid.UUID, userId2 uuid.UUID) (*relationship.Relationship, error) {
+	ctx := context.Background()
+
+	rel, err := gorm.G[relationship.Relationship](f.db).
+		Where("(follower_id = ? AND followee_id = ?) OR (followee_id = ? AND follower_id = ?)",
+			userId1, userId2, userId1, userId2).
+		First(ctx)
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, domain.ErrNotFound
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("%w: get relationship: %v", domain.UnhandledDbError, err)
+	}
+
+	return &rel, nil
 }
 
 func NewFriendRepo(db *gorm.DB) *FriendRepo {
