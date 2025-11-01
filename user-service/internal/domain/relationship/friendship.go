@@ -1,4 +1,4 @@
-package friendship
+package relationship
 
 import (
 	"time"
@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type Friend struct {
+type Relationship struct {
 	FollowerId uuid.UUID
 	FolloweeId uuid.UUID
 	AreFriends bool

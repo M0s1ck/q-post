@@ -7,6 +7,7 @@ import (
 )
 
 type AccessTokenValidator interface {
+	ValidateUserToken(jwt string) error
 	ValidateUserTokenAndGetId(token string) (uuid.UUID, error)
 	ValidateApiTokenIssuedAt(token string, issuer string) error
 	ValidateUserTokenBySubId(token string, userId uuid.UUID) error

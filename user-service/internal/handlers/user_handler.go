@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -268,26 +267,4 @@ func (uHand *UserHandler) GetMe(c *gin.Context) {
 	}
 
 	c.IndentedJSON(http.StatusOK, *userDto)
-}
-
-func respondErr(c *gin.Context, code int, message string) {
-	errResponse := dto.ErrorResponse{
-		Message: message,
-	}
-
-	c.JSON(code, errResponse)
-}
-
-func getAuthorizationToken(c *gin.Context) (string, error) {
-	jwt := c.GetHeader("Authorization")
-
-	if strings.HasPrefix(jwt, "Bearer ") {
-		jwt = strings.TrimPrefix(jwt, "Bearer ")
-	}
-
-	if jwt == "" {
-		return "", errors.New("no authorization token found")
-	}
-
-	return jwt, nil
 }

@@ -39,7 +39,7 @@ func (v *Validator) ValidateApiToken(tokenStr string) (*ApiServiceClaims, error)
 	return &claims, nil
 }
 
-func (v *Validator) ValidateUserToken(tokenStr string) (*UserClaims, error) {
+func (v *Validator) validateUserTokenAndGetClaims(tokenStr string) (*UserClaims, error) {
 	var claims = UserClaims{}
 	token, err := jwt.ParseWithClaims(tokenStr, &claims, v.keyFuncUserSymmetrical)
 
@@ -68,8 +68,13 @@ func (v *Validator) ValidateApiTokenIssuedAt(jwt string, issuer string) error {
 	return nil
 }
 
+func (v *Validator) ValidateUserToken(jwt string) error {
+	_, err := v.validateUserTokenAndGetClaims(jwt)
+	return err
+}
+
 func (v *Validator) ValidateUserTokenAndGetId(jwt string) (uuid.UUID, error) {
-	claims, err := v.ValidateUserToken(jwt)
+	claims, err := v.validateUserTokenAndGetClaims(jwt)
 
 	if err != nil {
 		return uuid.Nil, err
@@ -84,7 +89,7 @@ func (v *Validator) ValidateUserTokenAndGetId(jwt string) (uuid.UUID, error) {
 }
 
 func (v *Validator) ValidateUserTokenBySubId(jwt string, userId uuid.UUID) error {
-	claims, err := v.ValidateUserToken(jwt)
+	claims, err := v.validateUserTokenAndGetClaims(jwt)
 
 	if err != nil {
 		return err
@@ -98,7 +103,7 @@ func (v *Validator) ValidateUserTokenBySubId(jwt string, userId uuid.UUID) error
 }
 
 func (v *Validator) ValidateUserTokenBySubIdOrRole(jwt string, userId uuid.UUID, role user.GlobalRole) error {
-	claims, err := v.ValidateUserToken(jwt)
+	claims, err := v.validateUserTokenAndGetClaims(jwt)
 
 	if err != nil {
 		return err

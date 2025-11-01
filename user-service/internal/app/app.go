@@ -13,7 +13,7 @@ import (
 	"user-service/internal/infra/env"
 	"user-service/internal/repository"
 	myjwt "user-service/internal/service/jwt"
-	"user-service/internal/usecase/friends"
+	"user-service/internal/usecase/relationships"
 	"user-service/internal/usecase/users"
 )
 
@@ -27,10 +27,10 @@ func BuildGinEngine(envConf *env.Config) *gin.Engine {
 	friendsRepo := repository.NewFriendRepo(db)
 
 	userUseCase := users.NewUserUseCase(userRepo, jwtValidator)
-	getFriendsUseCase := friends.NewGetFriendsUseCase(friendsRepo, userRepo, jwtValidator)
+	getRelationshipsUseCase := relationships.NewGetRelationshipsUseCase(friendsRepo, userRepo, jwtValidator)
 
 	userHandler := handlers.NewUserHandler(userUseCase)
-	friendHandler := handlers.NewFriendHandler(getFriendsUseCase)
+	friendHandler := handlers.NewGetRelationshipsHandler(getRelationshipsUseCase)
 
 	engine := gin.Default()
 
