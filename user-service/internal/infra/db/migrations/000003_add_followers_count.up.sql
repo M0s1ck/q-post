@@ -1,0 +1,4 @@
+ALTER TABLE community.users
+ADD COLUMN followers_count INT NOT NULL DEFAULT 0,
+ADD COLUMN followees_count INT NOT NULL DEFAULT 0,
+ADD COLUMN friends_count INT NOT NULL DEFAULT 0;

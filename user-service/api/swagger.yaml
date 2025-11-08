@@ -166,6 +166,44 @@ paths:
       summary: Get user by id
       tags:
       - Users
+  /users/{id}/follow:
+    post:
+      consumes:
+      - application/json
+      description: Sender follows user with followeeId, they might become friends
+        if followee already follows
+      parameters:
+      - description: Followee ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Follow a user
+      tags:
+      - relationships
   /users/{id}/followees:
     get:
       consumes:

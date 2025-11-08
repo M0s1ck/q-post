@@ -12,3 +12,11 @@ type Relationship struct {
 	AreFriends bool
 	CreatedAt  time.Time
 }
+
+func newRelationship(followerId uuid.UUID, followeeId uuid.UUID, areFriends bool, createdAt time.Time) *Relationship {
+	return &Relationship{
+		FollowerId: followerId,
+		FolloweeId: followeeId,
+		AreFriends: areFriends,
+		CreatedAt:  createdAt}
+}

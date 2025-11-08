@@ -12,14 +12,14 @@ import (
 	"user-service/internal/domain/relationship"
 )
 
-type FriendRepo struct {
+type RelationRepo struct {
 	db *gorm.DB
 }
 
-func (f *FriendRepo) GetFriendIds(userId uuid.UUID, offset int, limit int) ([]uuid.UUID, error) {
+func (r *RelationRepo) GetFriendIds(userId uuid.UUID, offset int, limit int) ([]uuid.UUID, error) {
 	ctx := context.Background()
 
-	friendships, err := gorm.G[relationship.Relationship](f.db).
+	friendships, err := gorm.G[relationship.Relationship](r.db).
 		Where("(follower_id = ? OR followee_id = ?) AND are_friends = ?", userId, userId, true).
 		Order("created_at").
 		Offset(offset).
@@ -43,11 +43,11 @@ func (f *FriendRepo) GetFriendIds(userId uuid.UUID, offset int, limit int) ([]uu
 	return fIds, nil
 }
 
-func (f *FriendRepo) GetFollowerIds(userId uuid.UUID, offset int, limit int) ([]uuid.UUID, error) {
+func (r *RelationRepo) GetFollowerIds(userId uuid.UUID, offset int, limit int) ([]uuid.UUID, error) {
 	ctx := context.Background()
 	var followerIds []uuid.UUID
 
-	err := f.db.WithContext(ctx).
+	err := r.db.WithContext(ctx).
 		Model(&relationship.Relationship{}).
 		Where("followee_id = ? AND are_friends = ?", userId, false).
 		Order("created_at").
@@ -62,11 +62,11 @@ func (f *FriendRepo) GetFollowerIds(userId uuid.UUID, offset int, limit int) ([]
 	return followerIds, nil
 }
 
-func (f *FriendRepo) GetFolloweeIds(userId uuid.UUID, offset int, limit int) ([]uuid.UUID, error) {
+func (r *RelationRepo) GetFolloweeIds(userId uuid.UUID, offset int, limit int) ([]uuid.UUID, error) {
 	ctx := context.Background()
 	var followeeIds []uuid.UUID
 
-	err := f.db.WithContext(ctx).
+	err := r.db.WithContext(ctx).
 		Model(&relationship.Relationship{}).
 		Where("follower_id = ? AND are_friends = ?", userId, false).
 		Order("created_at").
@@ -81,10 +81,10 @@ func (f *FriendRepo) GetFolloweeIds(userId uuid.UUID, offset int, limit int) ([]
 	return followeeIds, nil
 }
 
-func (f *FriendRepo) GetRelationship(userId1 uuid.UUID, userId2 uuid.UUID) (*relationship.Relationship, error) {
+func (r *RelationRepo) GetRelationship(userId1 uuid.UUID, userId2 uuid.UUID) (*relationship.Relationship, error) {
 	ctx := context.Background()
 
-	rel, err := gorm.G[relationship.Relationship](f.db).
+	rel, err := gorm.G[relationship.Relationship](r.db).
 		Where("(follower_id = ? AND followee_id = ?) OR (followee_id = ? AND follower_id = ?)",
 			userId1, userId2, userId1, userId2).
 		First(ctx)
@@ -100,6 +100,46 @@ func (f *FriendRepo) GetRelationship(userId1 uuid.UUID, userId2 uuid.UUID) (*rel
 	return &rel, nil
 }
 
-func NewFriendRepo(db *gorm.DB) *FriendRepo {
-	return &FriendRepo{db: db}
+func (r *RelationRepo) Add(relation *relationship.Relationship) error {
+	ctx := context.Background()
+	err := gorm.G[relationship.Relationship](r.db).Create(ctx, relation)
+
+	if err != nil {
+		return fmt.Errorf("%w: add relationship: %v", domain.UnhandledDbError, err)
+	}
+
+	return nil
+}
+
+func (r *RelationRepo) Update(relation *relationship.Relationship) error {
+	ctx := context.Background()
+	_, err := gorm.G[relationship.Relationship](r.db).
+		Where("(follower_id = ? AND followee_id = ?) OR (followee_id = ? AND follower_id = ?)",
+			relation.FollowerId, relation.FolloweeId, relation.FollowerId, relation.FolloweeId).
+		Select("are_friends").
+		Updates(ctx, relationship.Relationship{AreFriends: relation.AreFriends})
+
+	if err != nil {
+		return fmt.Errorf("%w: update relationship: %v", domain.UnhandledDbError, err)
+	}
+
+	return nil
+}
+
+func (r *RelationRepo) Remove(userId1 uuid.UUID, userId2 uuid.UUID) error {
+	ctx := context.Background()
+	_, err := gorm.G[relationship.Relationship](r.db).
+		Where("(follower_id = ? AND followee_id = ?) OR (followee_id = ? AND follower_id = ?)",
+			userId1, userId2, userId1, userId2).
+		Delete(ctx)
+
+	if err != nil {
+		return fmt.Errorf("%w: remove relationship: %v", domain.UnhandledDbError, err)
+	}
+
+	return nil
+}
+
+func NewRelationRepo(db *gorm.DB) *RelationRepo {
+	return &RelationRepo{db: db}
 }

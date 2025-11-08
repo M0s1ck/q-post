@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 
 	"user-service/api"
+	relationdomain "user-service/internal/domain/relationship"
 	"user-service/internal/handlers"
 	infradb "user-service/internal/infra/db"
 	"user-service/internal/infra/env"
@@ -24,17 +25,22 @@ func BuildGinEngine(envConf *env.Config) *gin.Engine {
 	jwtValidator := myjwt.NewValidator(envConf.JWTSecret, envConf.ApiSecret, signMethod)
 
 	userRepo := repository.NewUserRepo(db)
-	friendsRepo := repository.NewFriendRepo(db)
+	relationRepo := repository.NewRelationRepo(db)
+
+	relationFactory := relationdomain.NewDefaultFactory()
 
 	userUseCase := users.NewUserUseCase(userRepo, jwtValidator)
-	getRelationshipsUseCase := relationships.NewGetRelationshipsUseCase(friendsRepo, userRepo, jwtValidator)
+	followUseCase := relationships.NewFollowUseCase(relationRepo, userRepo, relationFactory, jwtValidator)
+	getRelationshipsUseCase := relationships.NewGetRelationshipsUseCase(relationRepo, userRepo, jwtValidator)
 
 	userHandler := handlers.NewUserHandler(userUseCase)
+	followHandler := handlers.NewFollowHandler(followUseCase)
 	friendHandler := handlers.NewGetRelationshipsHandler(getRelationshipsUseCase)
 
 	engine := gin.Default()
 
 	userHandler.RegisterHandlers(engine)
+	followHandler.RegisterHandlers(engine)
 	friendHandler.RegisterHandlers(engine)
 
 	engine.GET("/health", handlers.HealthCheck)

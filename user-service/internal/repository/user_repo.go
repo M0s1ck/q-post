@@ -25,7 +25,7 @@ func NewUserRepo(dbs *gorm.DB) *UserRepo {
 
 func (repo *UserRepo) GetById(id uuid.UUID) (*user.User, error) {
 	ctx := context.Background()
-	user, err := gorm.G[user.User](repo.db).Where("id = ?", id).First(ctx)
+	us, err := gorm.G[user.User](repo.db).Where("id = ?", id).First(ctx)
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, fmt.Errorf("%w: get by id: %v", domain.ErrNotFound, err)
@@ -35,7 +35,7 @@ func (repo *UserRepo) GetById(id uuid.UUID) (*user.User, error) {
 		return nil, fmt.Errorf("%w: get by id: %v", domain.UnhandledDbError, err)
 	}
 
-	return &user, nil
+	return &us, nil
 }
 
 func (repo *UserRepo) Create(us *user.User) error {
@@ -99,4 +99,19 @@ func (repo *UserRepo) GetUsers(ids []uuid.UUID) ([]user.User, error) {
 	}
 
 	return users, nil
+}
+
+func (repo *UserRepo) ExistsBYId(id uuid.UUID) (bool, error) {
+	ctx := context.Background()
+	_, err := gorm.G[user.User](repo.db).Where("id = ?", id).First(ctx)
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return false, nil
+	}
+
+	if err != nil {
+		return false, fmt.Errorf("%w: user exists by id: %v", domain.UnhandledDbError, err)
+	}
+
+	return true, nil
 }

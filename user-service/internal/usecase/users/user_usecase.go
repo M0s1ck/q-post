@@ -36,13 +36,13 @@ func NewUserUseCase(userRepo UserRepo, jwtValidator usecase.AccessTokenValidator
 }
 
 func (u *UserUseCase) GetById(id uuid.UUID) (*dto.UserResponse, error) {
-	user, err := u.userRepo.GetById(id)
+	us, err := u.userRepo.GetById(id)
 
 	if err != nil {
 		return nil, err
 	}
 
-	userDto := mapper.GetUserDto(user)
+	userDto := mapper.GetUserDto(us)
 	return userDto, err
 }
 
@@ -61,9 +61,9 @@ func (u *UserUseCase) Create(userDto *dto.UserToCreate, token string) (*dto.Uuid
 		return nil, fmt.Errorf("%w: %v", domain.ErrInvalidToken, tokenErr)
 	}
 
-	user := mapper.UserFromCreateRequest(userDto)
-	err := u.userRepo.Create(user)
-	return &dto.UuidOnlyResponse{Id: user.Id}, err
+	us := mapper.UserFromCreateRequest(userDto)
+	err := u.userRepo.Create(us)
+	return &dto.UuidOnlyResponse{Id: us.Id}, err
 }
 
 func (u *UserUseCase) UpdateDetails(userDetailsDto *dto.UserDetailStr, token string) error {

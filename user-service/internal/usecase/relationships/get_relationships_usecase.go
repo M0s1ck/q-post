@@ -2,11 +2,10 @@ package relationships
 
 import (
 	"errors"
-	"github.com/google/uuid"
-	"user-service/internal/domain"
-	"user-service/internal/domain/relationship"
 
-	"user-service/internal/domain/user"
+	"github.com/google/uuid"
+
+	"user-service/internal/domain"
 	"user-service/internal/dto"
 	"user-service/internal/mapper"
 	"user-service/internal/usecase"
@@ -21,24 +20,13 @@ const (
 	nobodyStatus     = "nobody"
 )
 
-type relationshipsGetter interface {
-	GetRelationship(userId1 uuid.UUID, userId2 uuid.UUID) (*relationship.Relationship, error)
-	GetFriendIds(userId uuid.UUID, offset int, limit int) ([]uuid.UUID, error)
-	GetFollowerIds(userId uuid.UUID, offset int, limit int) ([]uuid.UUID, error)
-	GetFolloweeIds(userId uuid.UUID, offset int, limit int) ([]uuid.UUID, error)
-}
-
-type usersGetter interface {
-	GetUsers([]uuid.UUID) ([]user.User, error)
-}
-
 type GetRelationshipsUseCase struct {
 	relationshipRepo relationshipsGetter
-	userRepo         usersGetter
+	userRepo         userGetter
 	tokenVal         usecase.AccessTokenValidator
 }
 
-func NewGetRelationshipsUseCase(fRepo relationshipsGetter, uRepo usersGetter, tVal usecase.AccessTokenValidator) *GetRelationshipsUseCase {
+func NewGetRelationshipsUseCase(fRepo relationshipsGetter, uRepo userGetter, tVal usecase.AccessTokenValidator) *GetRelationshipsUseCase {
 	return &GetRelationshipsUseCase{
 		relationshipRepo: fRepo,
 		userRepo:         uRepo,
