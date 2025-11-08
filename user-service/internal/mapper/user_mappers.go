@@ -12,14 +12,17 @@ const dateLayout = "2006-01-02"
 
 func GetUserDto(user *user.User) *dto.UserResponse {
 	userDto := dto.UserResponse{
-		Id:           user.Id,
-		Username:     user.Username,
-		PostKarma:    user.PostKarma,
-		CommentKarma: user.CommentKarma,
-		Name:         user.Name,
-		Description:  user.Description,
-		Birthday:     user.Birthday,
-		CreatedAt:    user.CreatedAt,
+		Id:             user.Id,
+		Username:       user.Username,
+		Name:           user.Name,
+		Description:    user.Description,
+		Birthday:       user.Birthday,
+		FriendsCount:   user.FriendsCount,
+		FollowersCount: user.FollowersCount,
+		FolloweesCount: user.FolloweesCount,
+		PostKarma:      user.PostKarma,
+		CommentKarma:   user.CommentKarma,
+		CreatedAt:      user.CreatedAt,
 	}
 
 	return &userDto

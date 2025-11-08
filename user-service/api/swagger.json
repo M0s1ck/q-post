@@ -612,28 +612,48 @@
             "type": "object",
             "properties": {
                 "birthday": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2006-01-02"
                 },
                 "commentKarma": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 800
                 },
                 "createdAt": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "2024-11-01T12:34:56Z"
                 },
                 "description": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "I love basketball and films"
+                },
+                "followeesCount": {
+                    "type": "integer",
+                    "example": 320
+                },
+                "followersCount": {
+                    "type": "integer",
+                    "example": 540
+                },
+                "friendsCount": {
+                    "type": "integer",
+                    "example": 120
                 },
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "John Doe"
                 },
                 "postKarma": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1500
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "M0s1ck"
                 }
             }
         },
@@ -641,10 +661,12 @@
             "type": "object",
             "properties": {
                 "id": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "M0s1ck"
                 }
             }
         },
@@ -652,10 +674,12 @@
             "type": "object",
             "properties": {
                 "userId": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
                 },
                 "username": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "M0s1ck"
                 }
             }
         },
