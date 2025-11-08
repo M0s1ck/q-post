@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
@@ -54,6 +53,8 @@ func (repo *UserRepo) Create(us *user.User) error {
 	return nil
 }
 
+// TODO: maybe refactor for better architecture, so that user is ensured to have updated details
+
 func (repo *UserRepo) UpdateDetails(id uuid.UUID, details *user.UserDetails) error {
 	ctx := context.Background()
 
@@ -66,6 +67,27 @@ func (repo *UserRepo) UpdateDetails(id uuid.UUID, details *user.UserDetails) err
 
 	if err != nil {
 		return fmt.Errorf("%w: update details: %v", domain.UnhandledDbError, err)
+	}
+
+	return nil
+}
+
+func (repo *UserRepo) SaveFollowCounts(us *user.User) error {
+	ctx := context.Background()
+
+	affected, err := gorm.G[user.User](repo.db).Where("id = ?", us.Id).
+		Select("friends_count", "followees_count", "followers_count").
+		Updates(ctx, user.User{
+			FriendsCount:   us.FriendsCount,
+			FolloweesCount: us.FolloweesCount,
+			FollowersCount: us.FollowersCount})
+
+	if affected == 0 {
+		return fmt.Errorf("%w: update follow counts", domain.ErrNotFound)
+	}
+
+	if err != nil {
+		return fmt.Errorf("%w: update follow counts: %v", domain.UnhandledDbError, err)
 	}
 
 	return nil

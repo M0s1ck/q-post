@@ -11,3 +11,5 @@ var UnhandledDbError = errors.New("unhandled db error")
 var ErrInvalidToken = errors.New("invalid access token")
 
 var ErrInvalidDto = errors.New("invalid dto")
+
+var ErrSelfFollow = errors.New("self follow")

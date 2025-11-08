@@ -55,6 +55,11 @@ func (h *FollowHandler) Follow(c *gin.Context) {
 
 	err := h.useCase.Follow(followeeId, token)
 
+	if errors.Is(err, domain.ErrSelfFollow) {
+		respondErr(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
 	if errors.Is(err, domain.ErrInvalidToken) {
 		respondErr(c, http.StatusForbidden, err.Error())
 		return

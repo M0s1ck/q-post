@@ -26,3 +26,8 @@ type userGetter interface {
 	GetUsers([]uuid.UUID) ([]user.User, error)
 	ExistsBYId(id uuid.UUID) (bool, error)
 }
+
+type userFollowsUpdater interface {
+	GetById(id uuid.UUID) (*user.User, error)
+	SaveFollowCounts(user *user.User) error
+}

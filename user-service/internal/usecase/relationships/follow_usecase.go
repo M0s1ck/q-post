@@ -2,9 +2,8 @@ package relationships
 
 import (
 	"errors"
-	"fmt"
-
 	"github.com/google/uuid"
+	"user-service/internal/domain/user"
 
 	"user-service/internal/domain"
 	"user-service/internal/domain/relationship"
@@ -13,7 +12,7 @@ import (
 
 type FollowUseCase struct {
 	relRepo  relationReaderWriter
-	userRepo userGetter
+	userRepo userFollowsUpdater
 	factory  relationship.Factory
 	tokenVal usecase.AccessTokenValidator
 }
@@ -24,12 +23,18 @@ func (u *FollowUseCase) Follow(followeeId uuid.UUID, token string) error {
 		return tokenErr
 	}
 
-	exists, usErr := u.userRepo.ExistsBYId(followeeId)
+	if followeeId == followerId {
+		return domain.ErrSelfFollow
+	}
+
+	followee, usErr := u.userRepo.GetById(followeeId)
 	if usErr != nil {
 		return usErr
 	}
-	if !exists {
-		return fmt.Errorf("followee not found: %w", domain.ErrNotFound)
+
+	follower, usErr := u.userRepo.GetById(followerId)
+	if usErr != nil {
+		return usErr
 	}
 
 	relation, relErr := u.relRepo.GetRelationship(followerId, followeeId)
@@ -39,29 +44,55 @@ func (u *FollowUseCase) Follow(followeeId uuid.UUID, token string) error {
 
 	// if no relationship, we add it
 	if errors.Is(relErr, domain.ErrNotFound) {
-		relation = u.factory.NewFollowerShip(followerId, followeeId)
-		addErr := u.relRepo.Add(relation)
-		if addErr != nil {
-			return addErr
-		}
-		return nil
+		return u.addFollowership(follower, followee)
 	}
 
 	// if followee wants to follow follower -> they become friends
 	if followerId == relation.FolloweeId && !relation.AreFriends {
-		relation.AreFriends = true
-		updErr := u.relRepo.Update(relation)
-		if updErr != nil {
-			return updErr
-		}
-		return nil
+		return u.improveRelationToFriendship(follower, followee, relation)
 	}
 
 	return nil
 }
 
+func (u *FollowUseCase) addFollowership(follower *user.User, followee *user.User) error {
+	relation := u.factory.NewFollowerShip(follower.Id, followee.Id)
+	addErr := u.relRepo.Add(relation)
+	if addErr != nil {
+		return addErr
+	}
+
+	follower.FolloweesCount++
+	followee.FollowersCount++
+	return u.saveGuys(follower, followee)
+}
+
+func (u *FollowUseCase) improveRelationToFriendship(follower *user.User, followee *user.User, relation *relationship.Relationship) error {
+	relation.AreFriends = true
+	updErr := u.relRepo.Update(relation)
+	if updErr != nil {
+		return updErr
+	}
+
+	follower.FollowersCount--
+	follower.FriendsCount++
+	followee.FolloweesCount--
+	followee.FriendsCount++
+	return u.saveGuys(follower, followee)
+}
+
+func (u *FollowUseCase) saveGuys(follower *user.User, followee *user.User) error {
+	saveErr := u.userRepo.SaveFollowCounts(follower)
+	if saveErr != nil {
+		return saveErr
+	}
+
+	saveErr = u.userRepo.SaveFollowCounts(followee)
+	return saveErr
+}
+
 func NewFollowUseCase(relRepo relationReaderWriter,
-	userRepo userGetter,
+	userRepo userFollowsUpdater,
 	factory relationship.Factory,
 	tokenVal usecase.AccessTokenValidator) *FollowUseCase {
 	return &FollowUseCase{
