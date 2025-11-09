@@ -14,6 +14,7 @@ import (
 	"user-service/internal/infra/env"
 	"user-service/internal/repository"
 	myjwt "user-service/internal/service/jwt"
+	"user-service/internal/service/transaction"
 	"user-service/internal/usecase/relationships"
 	"user-service/internal/usecase/users"
 )
@@ -23,14 +24,16 @@ func BuildGinEngine(envConf *env.Config) *gin.Engine {
 
 	signMethod := jwt.SigningMethodHS256
 	jwtValidator := myjwt.NewValidator(envConf.JWTSecret, envConf.ApiSecret, signMethod)
+	gormUnitOfWork := transaction.NewGormUnitOfWork(db)
 
-	userRepo := repository.NewUserRepo(db)
-	relationRepo := repository.NewRelationRepo(db)
+	baseRepo := repository.NewBaseRepo(db)
+	userRepo := repository.NewUserRepo(baseRepo)
+	relationRepo := repository.NewRelationRepo(baseRepo)
 
 	relationFactory := relationdomain.NewDefaultFactory()
 
 	userUseCase := users.NewUserUseCase(userRepo, jwtValidator)
-	followUseCase := relationships.NewFollowUseCase(relationRepo, userRepo, relationFactory, jwtValidator)
+	followUseCase := relationships.NewFollowUseCase(relationRepo, userRepo, relationFactory, gormUnitOfWork, jwtValidator)
 	getRelationshipsUseCase := relationships.NewGetRelationshipsUseCase(relationRepo, userRepo, jwtValidator)
 
 	userHandler := handlers.NewUserHandler(userUseCase)

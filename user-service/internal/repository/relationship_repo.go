@@ -13,7 +13,7 @@ import (
 )
 
 type RelationRepo struct {
-	db *gorm.DB
+	*BaseRepo
 }
 
 func (r *RelationRepo) GetFriendIds(userId uuid.UUID, offset int, limit int) ([]uuid.UUID, error) {
@@ -100,9 +100,9 @@ func (r *RelationRepo) GetRelationship(userId1 uuid.UUID, userId2 uuid.UUID) (*r
 	return &rel, nil
 }
 
-func (r *RelationRepo) Add(relation *relationship.Relationship) error {
-	ctx := context.Background()
-	err := gorm.G[relationship.Relationship](r.db).Create(ctx, relation)
+func (r *RelationRepo) Add(ctx context.Context, relation *relationship.Relationship) error {
+	tx := r.getTx(ctx)
+	err := gorm.G[relationship.Relationship](tx).Create(ctx, relation)
 
 	if err != nil {
 		return fmt.Errorf("%w: add relationship: %v", domain.UnhandledDbError, err)
@@ -140,6 +140,6 @@ func (r *RelationRepo) Remove(userId1 uuid.UUID, userId2 uuid.UUID) error {
 	return nil
 }
 
-func NewRelationRepo(db *gorm.DB) *RelationRepo {
-	return &RelationRepo{db: db}
+func NewRelationRepo(baseRepo *BaseRepo) *RelationRepo {
+	return &RelationRepo{BaseRepo: baseRepo}
 }

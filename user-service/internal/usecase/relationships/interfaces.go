@@ -1,6 +1,8 @@
 package relationships
 
 import (
+	"context"
+
 	"github.com/google/uuid"
 
 	"user-service/internal/domain/relationship"
@@ -16,7 +18,7 @@ type relationshipsGetter interface {
 
 type relationReaderWriter interface {
 	GetRelationship(userId1 uuid.UUID, userId2 uuid.UUID) (*relationship.Relationship, error)
-	Add(relation *relationship.Relationship) error
+	Add(ctx context.Context, relation *relationship.Relationship) error
 	Update(relation *relationship.Relationship) error
 	Remove(userId1 uuid.UUID, userId2 uuid.UUID) error
 }
@@ -29,5 +31,5 @@ type userGetter interface {
 
 type userFollowsUpdater interface {
 	GetById(id uuid.UUID) (*user.User, error)
-	SaveFollowCounts(user *user.User) error
+	SaveFollowCounts(user *user.User, ctx context.Context) error
 }

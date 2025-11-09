@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
@@ -15,11 +16,11 @@ import (
 const duplicateErrCode = "23505"
 
 type UserRepo struct {
-	db *gorm.DB
+	*BaseRepo
 }
 
-func NewUserRepo(dbs *gorm.DB) *UserRepo {
-	return &UserRepo{db: dbs}
+func NewUserRepo(baseRepo *BaseRepo) *UserRepo {
+	return &UserRepo{BaseRepo: baseRepo}
 }
 
 func (repo *UserRepo) GetById(id uuid.UUID) (*user.User, error) {
@@ -72,10 +73,9 @@ func (repo *UserRepo) UpdateDetails(id uuid.UUID, details *user.UserDetails) err
 	return nil
 }
 
-func (repo *UserRepo) SaveFollowCounts(us *user.User) error {
-	ctx := context.Background()
-
-	affected, err := gorm.G[user.User](repo.db).Where("id = ?", us.Id).
+func (repo *UserRepo) SaveFollowCounts(us *user.User, ctx context.Context) error {
+	tx := repo.getTx(ctx)
+	affected, err := gorm.G[user.User](tx).Where("id = ?", us.Id).
 		Select("friends_count", "followees_count", "followers_count").
 		Updates(ctx, user.User{
 			FriendsCount:   us.FriendsCount,
