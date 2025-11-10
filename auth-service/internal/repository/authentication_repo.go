@@ -29,7 +29,7 @@ func (repo *AuthenticationRepo) Create(authUser *user.AuthUser) error {
 
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) && pgErr.Code == duplicateErrCode {
-		return fmt.Errorf("%w: create username pass: %v", domain.ErrDuplicate, err)
+		return fmt.Errorf("%w: create username pass: %v: %v", domain.ErrDuplicate, err, pgErr.Detail)
 	}
 
 	if err != nil {

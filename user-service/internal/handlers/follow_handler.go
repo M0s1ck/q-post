@@ -2,11 +2,9 @@ package handlers
 
 import (
 	"errors"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"user-service/internal/domain"
 	"user-service/internal/usecase/relationships"
@@ -40,17 +38,8 @@ func (h *FollowHandler) RegisterHandlers(engine *gin.Engine) {
 // @Router       /users/{id}/follow [post]
 // @Security	 BearerAuth
 func (h *FollowHandler) Follow(c *gin.Context) {
-	var idStr = c.Param("id")
-	followeeId, uuidFormErr := uuid.Parse(idStr)
-
-	if uuidFormErr != nil {
-		respondErr(c, http.StatusBadRequest, uuidFormErr.Error())
-		return
-	}
-
-	token, tokenErr := getAuthorizationToken(c)
-	if tokenErr != nil {
-		respondErr(c, http.StatusBadRequest, tokenErr.Error())
+	followeeId, token, ok := handleGettingIdAndToken(c, "id")
+	if !ok {
 		return
 	}
 
@@ -61,19 +50,8 @@ func (h *FollowHandler) Follow(c *gin.Context) {
 		return
 	}
 
-	if errors.Is(err, domain.ErrInvalidToken) {
-		respondErr(c, http.StatusForbidden, err.Error())
-		return
-	}
-
-	if errors.Is(err, domain.ErrNotFound) {
-		respondErr(c, http.StatusNotFound, err.Error())
-		return
-	}
-
 	if err != nil {
-		respondErr(c, http.StatusInternalServerError, err.Error())
-		log.Println("Unexpected err: ", err)
+		handleDefaultDomainErrors(c, err)
 		return
 	}
 
@@ -95,17 +73,8 @@ func (h *FollowHandler) Follow(c *gin.Context) {
 // @Router       /users/{id}/unfollow [post]
 // @Security	 BearerAuth
 func (h *FollowHandler) Unfollow(c *gin.Context) {
-	var idStr = c.Param("id")
-	followeeId, uuidFormErr := uuid.Parse(idStr)
-
-	if uuidFormErr != nil {
-		respondErr(c, http.StatusBadRequest, uuidFormErr.Error())
-		return
-	}
-
-	token, tokenErr := getAuthorizationToken(c)
-	if tokenErr != nil {
-		respondErr(c, http.StatusBadRequest, tokenErr.Error())
+	followeeId, token, ok := handleGettingIdAndToken(c, "id")
+	if !ok {
 		return
 	}
 
@@ -116,19 +85,8 @@ func (h *FollowHandler) Unfollow(c *gin.Context) {
 		return
 	}
 
-	if errors.Is(err, domain.ErrInvalidToken) {
-		respondErr(c, http.StatusForbidden, err.Error())
-		return
-	}
-
-	if errors.Is(err, domain.ErrNotFound) {
-		respondErr(c, http.StatusNotFound, err.Error())
-		return
-	}
-
 	if err != nil {
-		respondErr(c, http.StatusInternalServerError, err.Error())
-		log.Println("Unexpected err: ", err)
+		handleDefaultDomainErrors(c, err)
 		return
 	}
 

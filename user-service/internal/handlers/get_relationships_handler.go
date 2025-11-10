@@ -1,14 +1,8 @@
 package handlers
 
 import (
-	"errors"
-	"log"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
-	"user-service/internal/domain"
 	"user-service/internal/usecase/relationships"
 )
 
@@ -45,32 +39,17 @@ func (h *GetRelationshipsHandler) RegisterHandlers(engine *gin.Engine) {
 // @Router       /users/{id}/friends [get]
 // @Security	 BearerAuth
 func (h *GetRelationshipsHandler) GetFriends(c *gin.Context) {
-	var idStr = c.Param("id")
-	userId, uuidFormErr := uuid.Parse(idStr)
-
-	if uuidFormErr != nil {
-		respondErr(c, http.StatusBadRequest, uuidFormErr.Error())
+	userId, token, ok := handleGettingIdAndToken(c, "id")
+	if !ok {
 		return
 	}
 
 	page, pageSize := getPaginationParams(c)
 
-	token, tokenErr := getAuthorizationToken(c)
-	if tokenErr != nil {
-		respondErr(c, http.StatusBadRequest, tokenErr.Error())
-		return
-	}
-
 	homies, err := h.getRelsUc.GetFriends(userId, page, pageSize, token)
 
-	if errors.Is(err, domain.ErrInvalidToken) {
-		respondErr(c, http.StatusForbidden, err.Error())
-		return
-	}
-
 	if err != nil {
-		respondErr(c, http.StatusInternalServerError, err.Error())
-		log.Println("Unexpected err: ", err)
+		handleDefaultDomainErrors(c, err)
 		return
 	}
 
@@ -93,32 +72,17 @@ func (h *GetRelationshipsHandler) GetFriends(c *gin.Context) {
 // @Router       /users/{id}/followers [get]
 // @Security	 BearerAuth
 func (h *GetRelationshipsHandler) GetFollowers(c *gin.Context) {
-	var idStr = c.Param("id")
-	userId, uuidFormErr := uuid.Parse(idStr)
-
-	if uuidFormErr != nil {
-		respondErr(c, http.StatusBadRequest, uuidFormErr.Error())
+	userId, token, ok := handleGettingIdAndToken(c, "id")
+	if !ok {
 		return
 	}
 
 	page, pageSize := getPaginationParams(c)
 
-	token, tokenErr := getAuthorizationToken(c)
-	if tokenErr != nil {
-		respondErr(c, http.StatusBadRequest, tokenErr.Error())
-		return
-	}
-
 	followers, err := h.getRelsUc.GetFollowers(userId, page, pageSize, token)
 
-	if errors.Is(err, domain.ErrInvalidToken) {
-		respondErr(c, http.StatusForbidden, err.Error())
-		return
-	}
-
 	if err != nil {
-		respondErr(c, http.StatusInternalServerError, err.Error())
-		log.Println("Unexpected err: ", err)
+		handleDefaultDomainErrors(c, err)
 		return
 	}
 
@@ -141,32 +105,17 @@ func (h *GetRelationshipsHandler) GetFollowers(c *gin.Context) {
 // @Router       /users/{id}/followees [get]
 // @Security	 BearerAuth
 func (h *GetRelationshipsHandler) GetFollowees(c *gin.Context) {
-	var idStr = c.Param("id")
-	userId, uuidFormErr := uuid.Parse(idStr)
-
-	if uuidFormErr != nil {
-		respondErr(c, http.StatusBadRequest, uuidFormErr.Error())
+	userId, token, ok := handleGettingIdAndToken(c, "id")
+	if !ok {
 		return
 	}
 
 	page, pageSize := getPaginationParams(c)
 
-	token, tokenErr := getAuthorizationToken(c)
-	if tokenErr != nil {
-		respondErr(c, http.StatusBadRequest, tokenErr.Error())
-		return
-	}
-
 	followers, err := h.getRelsUc.GetFollowees(userId, page, pageSize, token)
 
-	if errors.Is(err, domain.ErrInvalidToken) {
-		respondErr(c, http.StatusForbidden, err.Error())
-		return
-	}
-
 	if err != nil {
-		respondErr(c, http.StatusInternalServerError, err.Error())
-		log.Println("Unexpected err: ", err)
+		handleDefaultDomainErrors(c, err)
 		return
 	}
 
@@ -187,30 +136,15 @@ func (h *GetRelationshipsHandler) GetFollowees(c *gin.Context) {
 // @Router       /users/{id}/relationship [get]
 // @Security	 BearerAuth
 func (h *GetRelationshipsHandler) GetRelationship(c *gin.Context) {
-	var idStr = c.Param("id")
-	userId, uuidFormErr := uuid.Parse(idStr)
-
-	if uuidFormErr != nil {
-		respondErr(c, http.StatusBadRequest, uuidFormErr.Error())
-		return
-	}
-
-	token, tokenErr := getAuthorizationToken(c)
-	if tokenErr != nil {
-		respondErr(c, http.StatusBadRequest, tokenErr.Error())
+	userId, token, ok := handleGettingIdAndToken(c, "id")
+	if !ok {
 		return
 	}
 
 	relStatus, err := h.getRelsUc.GetRelationshipStatus(userId, token)
 
-	if errors.Is(err, domain.ErrInvalidToken) {
-		respondErr(c, http.StatusForbidden, err.Error())
-		return
-	}
-
 	if err != nil {
-		respondErr(c, http.StatusInternalServerError, err.Error())
-		log.Println("Unexpected err: ", err)
+		handleDefaultDomainErrors(c, err)
 		return
 	}
 

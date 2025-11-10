@@ -2,9 +2,10 @@ package transaction
 
 import (
 	"context"
-	"user-service/internal/repository"
 
 	"gorm.io/gorm"
+
+	"user-service/internal/repository"
 )
 
 type GormUnitOfWork struct {

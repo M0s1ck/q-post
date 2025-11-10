@@ -3,11 +3,11 @@ package jwt
 import (
 	"fmt"
 	"reflect"
-	"user-service/internal/domain"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 
+	"user-service/internal/domain"
 	"user-service/internal/domain/user"
 )
 

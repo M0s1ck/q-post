@@ -44,7 +44,7 @@ func (repo *UserRepo) Create(us *user.User) error {
 
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) && pgErr.Code == duplicateErrCode {
-		return fmt.Errorf("%w: create user: %v", domain.ErrDuplicate, err)
+		return fmt.Errorf("%w: create user: %v: %v", domain.ErrDuplicate, err, pgErr.Detail)
 	}
 
 	if err != nil {

@@ -3,8 +3,8 @@ package mapper
 import (
 	"fmt"
 	"time"
-	"user-service/internal/domain"
 
+	"user-service/internal/domain"
 	"user-service/internal/domain/user"
 	"user-service/internal/dto"
 )
