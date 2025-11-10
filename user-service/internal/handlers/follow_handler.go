@@ -22,6 +22,7 @@ func NewFollowHandler(uc *relationships.FollowUseCase) *FollowHandler {
 
 func (h *FollowHandler) RegisterHandlers(engine *gin.Engine) {
 	engine.POST("/users/:id/follow", h.Follow)
+	engine.POST("/users/:id/unfollow", h.Unfollow)
 }
 
 // Follow godoc
@@ -54,6 +55,61 @@ func (h *FollowHandler) Follow(c *gin.Context) {
 	}
 
 	err := h.useCase.Follow(followeeId, token)
+
+	if errors.Is(err, domain.ErrSelfFollow) {
+		respondErr(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if errors.Is(err, domain.ErrInvalidToken) {
+		respondErr(c, http.StatusForbidden, err.Error())
+		return
+	}
+
+	if errors.Is(err, domain.ErrNotFound) {
+		respondErr(c, http.StatusNotFound, err.Error())
+		return
+	}
+
+	if err != nil {
+		respondErr(c, http.StatusInternalServerError, err.Error())
+		log.Println("Unexpected err: ", err)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+// Unfollow godoc
+// @Summary      Unfollow a user
+// @Description  Sender unfollows the user with followeeId, they're not friends anymore if they were
+// @Tags         relationships
+// @Accept       json
+// @Produce      json
+// @Param        id         path      string  true  "Followee ID"
+// @Success      204
+// @Failure      400 {object} dto.ErrorResponse
+// @Failure      403 {object} dto.ErrorResponse
+// @Failure      404 {object} dto.ErrorResponse
+// @Failure      500 {object} dto.ErrorResponse
+// @Router       /users/{id}/unfollow [post]
+// @Security	 BearerAuth
+func (h *FollowHandler) Unfollow(c *gin.Context) {
+	var idStr = c.Param("id")
+	followeeId, uuidFormErr := uuid.Parse(idStr)
+
+	if uuidFormErr != nil {
+		respondErr(c, http.StatusBadRequest, uuidFormErr.Error())
+		return
+	}
+
+	token, tokenErr := getAuthorizationToken(c)
+	if tokenErr != nil {
+		respondErr(c, http.StatusBadRequest, tokenErr.Error())
+		return
+	}
+
+	err := h.useCase.Unfollow(followeeId, token)
 
 	if errors.Is(err, domain.ErrSelfFollow) {
 		respondErr(c, http.StatusBadRequest, err.Error())

@@ -90,7 +90,7 @@ func (r *RelationRepo) GetRelationship(userId1 uuid.UUID, userId2 uuid.UUID) (*r
 		First(ctx)
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, domain.ErrNotFound
+		return nil, fmt.Errorf("%w: get relationship: %v", domain.ErrNotFound, err)
 	}
 
 	if err != nil {
@@ -100,7 +100,7 @@ func (r *RelationRepo) GetRelationship(userId1 uuid.UUID, userId2 uuid.UUID) (*r
 	return &rel, nil
 }
 
-func (r *RelationRepo) Add(ctx context.Context, relation *relationship.Relationship) error {
+func (r *RelationRepo) Add(relation *relationship.Relationship, ctx context.Context) error {
 	tx := r.getTx(ctx)
 	err := gorm.G[relationship.Relationship](tx).Create(ctx, relation)
 
@@ -111,9 +111,9 @@ func (r *RelationRepo) Add(ctx context.Context, relation *relationship.Relations
 	return nil
 }
 
-func (r *RelationRepo) Update(relation *relationship.Relationship) error {
-	ctx := context.Background()
-	_, err := gorm.G[relationship.Relationship](r.db).
+func (r *RelationRepo) Update(relation *relationship.Relationship, ctx context.Context) error {
+	tx := r.getTx(ctx)
+	_, err := gorm.G[relationship.Relationship](tx).
 		Where("(follower_id = ? AND followee_id = ?) OR (followee_id = ? AND follower_id = ?)",
 			relation.FollowerId, relation.FolloweeId, relation.FollowerId, relation.FolloweeId).
 		Select("are_friends").
@@ -126,7 +126,20 @@ func (r *RelationRepo) Update(relation *relationship.Relationship) error {
 	return nil
 }
 
-func (r *RelationRepo) Remove(userId1 uuid.UUID, userId2 uuid.UUID) error {
+func (r *RelationRepo) Remove(relation *relationship.Relationship, ctx context.Context) error {
+	tx := r.getTx(ctx)
+	_, err := gorm.G[relationship.Relationship](tx).
+		Where("follower_id = ? AND followee_id = ?", relation.FollowerId, relation.FolloweeId).
+		Delete(ctx)
+
+	if err != nil {
+		return fmt.Errorf("%w: remove relationship: %v", domain.UnhandledDbError, err)
+	}
+
+	return nil
+}
+
+func (r *RelationRepo) RemoveByIds(userId1 uuid.UUID, userId2 uuid.UUID) error {
 	ctx := context.Background()
 	_, err := gorm.G[relationship.Relationship](r.db).
 		Where("(follower_id = ? AND followee_id = ?) OR (followee_id = ? AND follower_id = ?)",

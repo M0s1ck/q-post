@@ -16,11 +16,12 @@ type relationshipsGetter interface {
 	GetFolloweeIds(userId uuid.UUID, offset int, limit int) ([]uuid.UUID, error)
 }
 
+// All write operations require context to support transactions
 type relationReaderWriter interface {
 	GetRelationship(userId1 uuid.UUID, userId2 uuid.UUID) (*relationship.Relationship, error)
-	Add(ctx context.Context, relation *relationship.Relationship) error
-	Update(relation *relationship.Relationship) error
-	Remove(userId1 uuid.UUID, userId2 uuid.UUID) error
+	Add(relation *relationship.Relationship, ctx context.Context) error
+	Update(relation *relationship.Relationship, ctx context.Context) error
+	Remove(relation *relationship.Relationship, ctx context.Context) error
 }
 
 type userGetter interface {

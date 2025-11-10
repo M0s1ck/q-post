@@ -1,11 +1,8 @@
 package users
 
 import (
-	"fmt"
-
 	"github.com/google/uuid"
 
-	"user-service/internal/domain"
 	"user-service/internal/domain/user"
 	"user-service/internal/dto"
 	"user-service/internal/mapper"
@@ -37,7 +34,6 @@ func NewUserUseCase(userRepo UserRepo, jwtValidator usecase.AccessTokenValidator
 
 func (u *UserUseCase) GetById(id uuid.UUID) (*dto.UserResponse, error) {
 	us, err := u.userRepo.GetById(id)
-
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +45,7 @@ func (u *UserUseCase) GetById(id uuid.UUID) (*dto.UserResponse, error) {
 func (u *UserUseCase) GetMe(token string) (*dto.UserResponse, error) {
 	userId, tokenErr := u.accessTokenValidator.ValidateUserTokenAndGetId(token)
 	if tokenErr != nil {
-		return nil, fmt.Errorf("%w: %v", domain.ErrInvalidToken, tokenErr)
+		return nil, tokenErr
 	}
 
 	return u.GetById(userId)
@@ -58,7 +54,7 @@ func (u *UserUseCase) GetMe(token string) (*dto.UserResponse, error) {
 func (u *UserUseCase) Create(userDto *dto.UserToCreate, token string) (*dto.UuidOnlyResponse, error) {
 	tokenErr := u.accessTokenValidator.ValidateApiTokenIssuedAt(token, authServiceIssuer)
 	if tokenErr != nil {
-		return nil, fmt.Errorf("%w: %v", domain.ErrInvalidToken, tokenErr)
+		return nil, tokenErr
 	}
 
 	us := mapper.UserFromCreateRequest(userDto)
@@ -69,12 +65,12 @@ func (u *UserUseCase) Create(userDto *dto.UserToCreate, token string) (*dto.Uuid
 func (u *UserUseCase) UpdateDetails(userDetailsDto *dto.UserDetailStr, token string) error {
 	details, dtoErr := mapper.GetUserDetailsFromDto(userDetailsDto)
 	if dtoErr != nil {
-		return fmt.Errorf("%w: %v", domain.ErrInvalidDto, dtoErr)
+		return dtoErr
 	}
 
 	id, tokenErr := u.accessTokenValidator.ValidateUserTokenAndGetId(token)
 	if tokenErr != nil {
-		return fmt.Errorf("%w: %v", domain.ErrInvalidToken, tokenErr)
+		return tokenErr
 	}
 
 	err := u.userRepo.UpdateDetails(id, details)
@@ -84,7 +80,7 @@ func (u *UserUseCase) UpdateDetails(userDetailsDto *dto.UserDetailStr, token str
 func (u *UserUseCase) Delete(id uuid.UUID, token string) error {
 	tokenErr := u.accessTokenValidator.ValidateUserTokenBySubIdOrRole(token, id, user.RoleAdmin)
 	if tokenErr != nil {
-		return fmt.Errorf("%w: %v", domain.ErrInvalidToken, tokenErr)
+		return tokenErr
 	}
 
 	err := u.userRepo.Delete(id)

@@ -24,9 +24,11 @@ func BuildGinEngine(envConf *env.Config) *gin.Engine {
 
 	signMethod := jwt.SigningMethodHS256
 	jwtValidator := myjwt.NewValidator(envConf.JWTSecret, envConf.ApiSecret, signMethod)
-	gormUnitOfWork := transaction.NewGormUnitOfWork(db)
 
-	baseRepo := repository.NewBaseRepo(db)
+	txKey := repository.TxKeyType{}
+	gormUnitOfWork := transaction.NewGormUnitOfWork(db, txKey)
+
+	baseRepo := repository.NewBaseRepo(db, txKey)
 	userRepo := repository.NewUserRepo(baseRepo)
 	relationRepo := repository.NewRelationRepo(baseRepo)
 

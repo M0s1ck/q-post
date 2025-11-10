@@ -3,6 +3,7 @@ package jwt
 import (
 	"fmt"
 	"reflect"
+	"user-service/internal/domain"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -29,11 +30,11 @@ func (v *Validator) ValidateApiToken(tokenStr string) (*ApiServiceClaims, error)
 	token, err := jwt.ParseWithClaims(tokenStr, &claims, v.keyFuncApiSymmetrical)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %v", domain.ErrInvalidToken, err)
 	}
 
 	if !token.Valid {
-		return nil, fmt.Errorf("invalid token")
+		return nil, domain.ErrInvalidToken
 	}
 
 	return &claims, nil
@@ -44,11 +45,11 @@ func (v *Validator) validateUserTokenAndGetClaims(tokenStr string) (*UserClaims,
 	token, err := jwt.ParseWithClaims(tokenStr, &claims, v.keyFuncUserSymmetrical)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %v", domain.ErrInvalidToken, err)
 	}
 
 	if !token.Valid {
-		return nil, fmt.Errorf("invalid token")
+		return nil, domain.ErrInvalidToken
 	}
 
 	return &claims, nil
@@ -62,7 +63,8 @@ func (v *Validator) ValidateApiTokenIssuedAt(jwt string, issuer string) error {
 	}
 
 	if claims.Issuer != issuer {
-		return fmt.Errorf("user service: unexpected jwt issuer: %v", claims.Issuer)
+		return fmt.Errorf("%w: user service: unexpected jwt issuer: %v",
+			domain.ErrInvalidToken, claims.Issuer)
 	}
 
 	return nil
@@ -82,7 +84,7 @@ func (v *Validator) ValidateUserTokenAndGetId(jwt string) (uuid.UUID, error) {
 
 	id, err := uuid.Parse(claims.Subject)
 	if err != nil {
-		return uuid.Nil, err
+		return uuid.Nil, fmt.Errorf("%w: %v", domain.ErrInvalidToken, err)
 	}
 
 	return id, nil
@@ -96,7 +98,7 @@ func (v *Validator) ValidateUserTokenBySubId(jwt string, userId uuid.UUID) error
 	}
 
 	if claims.Subject != userId.String() {
-		return fmt.Errorf("unexpected jwt userId: %v", claims.Subject)
+		return fmt.Errorf("%w: unexpected jwt userId: %v", domain.ErrInvalidToken, claims.Subject)
 	}
 
 	return nil
@@ -110,7 +112,7 @@ func (v *Validator) ValidateUserTokenBySubIdOrRole(jwt string, userId uuid.UUID,
 	}
 
 	if claims.Role != role && claims.Subject != userId.String() {
-		return fmt.Errorf("unexpected jwt userId or weak role: %v", claims.Subject)
+		return fmt.Errorf("%w: unexpected jwt userId or weak role: %v", domain.ErrInvalidToken, claims.Subject)
 	}
 
 	return nil
