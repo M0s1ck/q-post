@@ -40,5 +40,14 @@ services:
     depends_on:
       - psg
 
+  auth-migrate:
+    build:
+      context: ./auth-service/internal/infra/db
+      dockerfile: migrate.dockerfile
+    env_file:
+      - .env
+    depends_on:
+      - psg
+
 volumes:
   pgs-data:

@@ -111,7 +111,7 @@ jobs:
           docker push ${{ vars.DOCKERHUB_USERNAME }}/user-service:latest
 
 
-  # deploy on vm by pulling images froim DockerHub via docker compose
+  # deploy on vm by pulling images from DockerHub via docker compose
   deploy:
     needs: build-and-push-to-docker-hub
     runs-on: ubuntu-latest
