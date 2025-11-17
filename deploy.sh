@@ -5,7 +5,7 @@ set -e
 cd "$(dirname "$0")"
 
 # get env variables from file
-source env
+source ./env
 
 # login to docker hub
 echo "${DOCKERHUB_TOKEN}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
