@@ -116,6 +116,9 @@ jobs:
     #if: github.ref == 'refs/heads/main'
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Copy docker-compose and env to server
         uses: appleboy/scp-action@v0.1.7
         with:
