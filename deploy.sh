@@ -3,6 +3,8 @@ set -e
 
 # always run from script's directory
 cd "$(dirname "$0")"
+pwd
+ls
 
 # get env variables from file
 source ./env
