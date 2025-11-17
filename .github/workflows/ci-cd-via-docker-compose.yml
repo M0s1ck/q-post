@@ -7,7 +7,7 @@ on:
 
 jobs:
 
-  bring-up-docker-on-runner:
+  bring-up-on-runner:
     runs-on: ubuntu-latest
 
     steps:
@@ -96,9 +96,9 @@ jobs:
           docker build -t ${{ vars.DOCKERHUB_USERNAME }}/q-post/auth-service:latest ./auth-service
           docker build -t ${{ vars.DOCKERHUB_USERNAME }}/q-post/user-service:latest ./user-service
           
-          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/q-post/auth-migrate:latest -f migrate.dockerfile ./auth-service/internal/infra/db 
-          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/q-post/user-migrate:latest -f migrate.dockerfile ./user-service/internal/infra/db 
-
+          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/q-post/auth-migrate:latest -f auth-service/internal/infra/db/migrate.dockerfile ./auth-service/internal/infra/db 
+          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/q-post/user-migrate:latest -f user-service/internal/infra/db/migrate.dockerfile ./user-service/internal/infra/db 
+                                                                  
 
       - name: Push images to DockerHub  # our container registry
         run: |
