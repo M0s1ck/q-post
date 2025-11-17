@@ -18,7 +18,7 @@ services:
       start_period: 10s
 
   auth-service:
-    image: mos1ck/q-post/auth-service:latest
+    image: mos1ck/q-post-auth-service:latest
     container_name: auth-service
     env_file:
       - .env
@@ -28,7 +28,7 @@ services:
       - psg
 
   user-service:
-    image: mos1ck/q-post/user-service:latest
+    image: mos1ck/q-post-user-service:latest
     container_name: user-service
     env_file:
       - .env
@@ -38,14 +38,14 @@ services:
       - psg
 
   auth-migrate:
-    image: mos1ck/q-post/auth-migrate:latest
+    image: mos1ck/q-post-auth-migrate:latest
     env_file:
       - .env
     depends_on:
       - psg
 
   user-migrate:
-    image: mos1ck/q-post/user-migrate:latest
+    image: mos1ck/q-post-user-migrate:latest
     env_file:
       - .env
     depends_on:

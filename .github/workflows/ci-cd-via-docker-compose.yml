@@ -93,11 +93,11 @@ jobs:
 
       - name: Build images
         run: |
-          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/q-post/auth-service:latest ./auth-service
-          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/q-post/user-service:latest ./user-service
+          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/q-post-auth-service:latest ./auth-service
+          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/q-post-user-service:latest ./user-service
           
-          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/q-post/auth-migrate:latest -f auth-service/internal/infra/db/migrate.dockerfile ./auth-service/internal/infra/db 
-          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/q-post/user-migrate:latest -f user-service/internal/infra/db/migrate.dockerfile ./user-service/internal/infra/db 
+          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/q-post-auth-migrate:latest -f auth-service/internal/infra/db/migrate.dockerfile ./auth-service/internal/infra/db 
+          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/q-post-user-migrate:latest -f user-service/internal/infra/db/migrate.dockerfile ./user-service/internal/infra/db 
                                                                   
 
       - name: Push images to DockerHub  # our container registry
