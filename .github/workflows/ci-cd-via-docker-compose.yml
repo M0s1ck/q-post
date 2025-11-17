@@ -102,11 +102,11 @@ jobs:
 
       - name: Push images to DockerHub  # our container registry
         run: |
-          docker push ${{ vars.DOCKERHUB_USERNAME }}/q-post/auth-service:latest
-          docker push ${{ vars.DOCKERHUB_USERNAME }}/q-post/user-service:latest
+          docker push ${{ vars.DOCKERHUB_USERNAME }}/q-post-auth-service:latest
+          docker push ${{ vars.DOCKERHUB_USERNAME }}/q-post-user-service:latest
           
-          docker push ${{ vars.DOCKERHUB_USERNAME }}/q-post/auth-migrate:latest
-          docker push ${{ vars.DOCKERHUB_USERNAME }}/q-post/user-migrate:latest
+          docker push ${{ vars.DOCKERHUB_USERNAME }}/q-post-auth-migrate:latest
+          docker push ${{ vars.DOCKERHUB_USERNAME }}/q-post-user-migrate:latest
 
 
   # deploy on vm by pulling images from DockerHub via docker compose
