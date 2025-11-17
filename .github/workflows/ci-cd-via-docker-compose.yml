@@ -128,20 +128,17 @@ jobs:
           POSTGRES_DB=${{ secrets.POSTGRES_DB }}
           POSTGRES_HOST=${{ vars.POSTGRES_HOST }}
           POSTGRES_PORT=${{ vars.POSTGRES_PORT }}
-          
+
           AUTH_SERVICE_HOST=${{ vars.AUTH_SERVICE_HOST }}
           AUTH_SERVICE_PORT=${{ vars.AUTH_SERVICE_PORT }}
           POSTGRES_AUTH_SCHEME=${{ vars.POSTGRES_AUTH_SCHEME }}
-          
+
           USER_SERVICE_HOST=${{ vars.USER_SERVICE_HOST }}
           USER_SERVICE_PORT=${{ vars.USER_SERVICE_PORT }}
           POSTGRES_COMMUNITY_SCHEME=${{ vars.POSTGRES_COMMUNITY_SCHEME }}
-          
+
           JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
           API_SECRET_KEY=${{ secrets.API_SECRET_KEY }}
-          
-          DOCKERHUB_USERNAME=${{ vars.DOCKERHUB_USERNAME }}
-          DOCKERHUB_TOKEN=${{ secrets.DOCKERHUB_TOKEN }}
           EOF
 
       - name: Debug files
