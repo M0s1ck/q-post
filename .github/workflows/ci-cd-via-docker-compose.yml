@@ -147,9 +147,8 @@ jobs:
           username: ${{ vars.VM_USER }}
           password: ${{ secrets.VM_PASSWORD }}
           key: ${{ secrets.VM_SSH_KEY }}
-          source: "docker-compose.prod.yaml,.env"
+          source: "docker-compose.prod.yaml,.env,deploy.sh"
           target: ~/q-post/
-
 
       - name: Deploy updated services
         uses: appleboy/ssh-action@v1.2.0
@@ -158,23 +157,4 @@ jobs:
           username: ${{ vars.VM_USER }}
           password: ${{ secrets.VM_PASSWORD }}
           key: ${{ secrets.VM_SSH_KEY }}
-          script: |
-            pwd
-            ls
-            cd ~/q-post
-            ls
-            
-            sudo docker compose -f docker-compose.prod.yaml pull
-            
-            docker compose up psg -d
-            
-            sleep 10
-            
-            docker compose run --rm auth-migrate
-            docker compose run --rm user-migrate
-            
-            sudo docker compose -f docker-compose.prod.yaml up -d
-            
-            sleep 10
-            
-            docker compose logs --tail=200
+          script: bash ~/q-post/deploy.sh
