@@ -4,8 +4,8 @@ set -e
 # always run from script's directory
 cd "$(dirname "$0")"
 
-# get env variables
-source .env
+# get env variables from file
+source env
 
 # login to docker hub
 echo "${DOCKERHUB_TOKEN}" | docker login -u "${DOCKERHUB_USERNAME}" --password-stdin
