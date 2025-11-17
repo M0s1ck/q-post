@@ -96,8 +96,8 @@ jobs:
           docker build -t ${{ vars.DOCKERHUB_USERNAME }}/q-post/auth-service:latest ./auth-service
           docker build -t ${{ vars.DOCKERHUB_USERNAME }}/q-post/user-service:latest ./user-service
           
-          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/q-post/auth-migrate:latest -f migrate.dockerfile ./auth-service/infra/db 
-          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/q-post/user-migrate:latest -f migrate.dockerfile ./user-service/infra/db 
+          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/q-post/auth-migrate:latest -f migrate.dockerfile ./auth-service/internal/infra/db 
+          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/q-post/user-migrate:latest -f migrate.dockerfile ./user-service/internal/infra/db 
 
 
       - name: Push images to DockerHub  # our container registry
@@ -121,6 +121,7 @@ jobs:
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
+          password: ${{ secrets.VM_PASSWORD }}
           key: ${{ secrets.VM_SSH_KEY }}
           source: |
             docker-compose.prod.yaml
