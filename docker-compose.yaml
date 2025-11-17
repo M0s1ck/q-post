@@ -58,8 +58,5 @@ services:
     depends_on:
       - psg
 
-  # TODO: maybe put migrations/ near the root, migrate all schemas from there, full control for each schema,
-  # no problems migrating, single docker image for this, single script
-
 volumes:
   pgs-data:

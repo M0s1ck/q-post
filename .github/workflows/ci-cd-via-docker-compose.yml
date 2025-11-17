@@ -138,6 +138,9 @@ jobs:
 
           JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
           API_SECRET_KEY=${{ secrets.API_SECRET_KEY }}
+          
+          DOCKERHUB_USERNAME=${{ vars.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN=${{ secrets.DOCKERHUB_TOKEN }}
           EOF
 
       - name: Copy docker-compose and env to server
