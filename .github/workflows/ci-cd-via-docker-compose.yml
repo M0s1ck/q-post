@@ -141,15 +141,13 @@ jobs:
           EOF
 
       - name: Copy docker-compose and env to server
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           password: ${{ secrets.VM_PASSWORD }}
           key: ${{ secrets.VM_SSH_KEY }}
-          source: |
-            docker-compose.prod.yaml
-            .env
+          source: "docker-compose.prod.yaml,.env"
           target: ~/q-post/
 
 
