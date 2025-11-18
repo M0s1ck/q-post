@@ -1,0 +1,166 @@
+name: CI/CD via docker compose
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+
+  bring-up-on-runner:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Copy source code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.24
+
+      - name: Build .env file from GitHub secrets
+        run: |
+          cat <<EOF > .env
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          POSTGRES_HOST=${{ vars.POSTGRES_HOST }}
+          POSTGRES_PORT=${{ vars.POSTGRES_PORT }}
+          
+          AUTH_SERVICE_HOST=${{ vars.AUTH_SERVICE_HOST }}
+          AUTH_SERVICE_PORT=${{ vars.AUTH_SERVICE_PORT }}
+          POSTGRES_AUTH_SCHEME=${{ vars.POSTGRES_AUTH_SCHEME }}
+          
+          USER_SERVICE_HOST=${{ vars.USER_SERVICE_HOST }}
+          USER_SERVICE_PORT=${{ vars.USER_SERVICE_PORT }}
+          POSTGRES_COMMUNITY_SCHEME=${{ vars.POSTGRES_COMMUNITY_SCHEME }}
+          
+          JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+          API_SECRET_KEY=${{ secrets.API_SECRET_KEY }}
+          EOF
+
+      - name: Build containers
+        run: docker compose build
+
+      - name: Bring up postgre db
+        run: docker compose up psg -d
+
+      - name: Wait for postgre db
+        run: sleep 10
+
+      - name: Apply migrations
+        run: |
+          docker compose run --rm auth-migrate
+          docker compose run --rm user-migrate
+
+      - name: Bring up services
+        run: docker compose up -d
+
+      - name: Wait for services
+        run: sleep 10
+
+      - name: Show logs
+        if: always()
+        run: docker compose logs --tail=200
+
+      - name: Ping health test
+        run: |
+          curl --fail http://localhost:${{ vars.USER_SERVICE_PORT }}/health
+          curl --fail http://localhost:${{ vars.AUTH_SERVICE_PORT }}/health
+
+      - name: Bring down
+        if: always()
+        run: docker compose down
+
+
+  # if successfully builds and runs on runner, push images to DockerHub
+  build-and-push-to-docker-hub:
+    runs-on: ubuntu-latest
+    needs: bring-up-on-runner
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Copy source code
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+
+      - name: Build images
+        run: |
+          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/q-post-auth-service:latest ./auth-service
+          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/q-post-user-service:latest ./user-service
+          
+          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/q-post-auth-migrate:latest -f auth-service/internal/infra/db/migrate.dockerfile ./auth-service/internal/infra/db 
+          docker build -t ${{ vars.DOCKERHUB_USERNAME }}/q-post-user-migrate:latest -f user-service/internal/infra/db/migrate.dockerfile ./user-service/internal/infra/db 
+                                                                  
+
+      - name: Push images to DockerHub  # our container registry
+        run: |
+          docker push ${{ vars.DOCKERHUB_USERNAME }}/q-post-auth-service:latest
+          docker push ${{ vars.DOCKERHUB_USERNAME }}/q-post-user-service:latest
+          
+          docker push ${{ vars.DOCKERHUB_USERNAME }}/q-post-auth-migrate:latest
+          docker push ${{ vars.DOCKERHUB_USERNAME }}/q-post-user-migrate:latest
+
+
+  # deploy on vm by pulling images from DockerHub via docker compose
+  deploy:
+    needs: build-and-push-to-docker-hub
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build env file from GitHub secrets
+        run: |
+          cat <<EOF > env
+          POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB=${{ secrets.POSTGRES_DB }}
+          POSTGRES_HOST=${{ vars.POSTGRES_HOST }}
+          POSTGRES_PORT=${{ vars.POSTGRES_PORT }}
+
+          AUTH_SERVICE_HOST=${{ vars.AUTH_SERVICE_HOST }}
+          AUTH_SERVICE_PORT=${{ vars.AUTH_SERVICE_PORT }}
+          POSTGRES_AUTH_SCHEME=${{ vars.POSTGRES_AUTH_SCHEME }}
+
+          USER_SERVICE_HOST=${{ vars.USER_SERVICE_HOST }}
+          USER_SERVICE_PORT=${{ vars.USER_SERVICE_PORT }}
+          POSTGRES_COMMUNITY_SCHEME=${{ vars.POSTGRES_COMMUNITY_SCHEME }}
+
+          JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+          API_SECRET_KEY=${{ secrets.API_SECRET_KEY }}
+          
+          DOCKERHUB_USERNAME=${{ vars.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN=${{ secrets.DOCKERHUB_TOKEN }}
+          EOF
+
+      - name: Debug files
+        run: ls -la
+
+      - name: Copy docker-compose and env to server
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ vars.VM_USER }}
+          password: ${{ secrets.VM_PASSWORD }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          source: "docker-compose.prod.yaml,env,deploy.sh"
+          target: ~/q-post/
+
+      - name: Deploy updated services
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ vars.VM_USER }}
+          password: ${{ secrets.VM_PASSWORD }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: bash ~/q-post/deploy.sh

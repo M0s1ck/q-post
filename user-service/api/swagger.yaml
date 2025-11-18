@@ -5,6 +5,12 @@ definitions:
         example: Error info
         type: string
     type: object
+  dto.RelationshipStatus:
+    properties:
+      message:
+        example: friend
+        type: string
+    type: object
   dto.UserDetailStr:
     properties:
       birthday:
@@ -20,27 +26,55 @@ definitions:
   dto.UserResponse:
     properties:
       birthday:
+        example: "2006-01-02"
         type: string
       commentKarma:
+        example: 800
         type: integer
       createdAt:
+        example: "2024-11-01T12:34:56Z"
         type: string
       description:
+        example: I love basketball and films
         type: string
+      followeesCount:
+        example: 320
+        type: integer
+      followersCount:
+        example: 540
+        type: integer
+      friendsCount:
+        example: 120
+        type: integer
       id:
+        example: 550e8400-e29b-41d4-a716-446655440000
         type: string
       name:
+        example: John Doe
         type: string
       postKarma:
+        example: 1500
         type: integer
       username:
+        example: M0s1ck
+        type: string
+    type: object
+  dto.UserSummary:
+    properties:
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      username:
+        example: M0s1ck
         type: string
     type: object
   dto.UserToCreate:
     properties:
       userId:
+        example: 550e8400-e29b-41d4-a716-446655440000
         type: string
       username:
+        example: M0s1ck
         type: string
     type: object
   dto.UuidOnlyResponse:
@@ -132,6 +166,254 @@ paths:
       summary: Get user by id
       tags:
       - Users
+  /users/{id}/follow:
+    post:
+      consumes:
+      - application/json
+      description: Sender follows user with followeeId, they might become friends
+        if followee already follows
+      parameters:
+      - description: Followee ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Follow a user
+      tags:
+      - relationships
+  /users/{id}/followees:
+    get:
+      consumes:
+      - application/json
+      description: Returns paginated list of user's followees (those who user follows)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page number (default 0)
+        in: query
+        name: page
+        type: integer
+      - description: Page size (default 20)
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.UserSummary'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user's followees
+      tags:
+      - relationships
+  /users/{id}/followers:
+    get:
+      consumes:
+      - application/json
+      description: Returns paginated list of user's followers
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page number (default 0)
+        in: query
+        name: page
+        type: integer
+      - description: Page size (default 20)
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.UserSummary'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user's followers
+      tags:
+      - relationships
+  /users/{id}/friends:
+    get:
+      consumes:
+      - application/json
+      description: Returns paginated list of user's friends
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page number (default 0)
+        in: query
+        name: page
+        type: integer
+      - description: Page size (default 20)
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.UserSummary'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get user's friends
+      tags:
+      - relationships
+  /users/{id}/relationship:
+    get:
+      consumes:
+      - application/json
+      description: Returns relationship status of user of given id to user-sender
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.RelationshipStatus'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get relationship status
+      tags:
+      - relationships
+  /users/{id}/unfollow:
+    post:
+      consumes:
+      - application/json
+      description: Sender unfollows the user with followeeId, they're not friends
+        anymore if they were
+      parameters:
+      - description: Followee ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Unfollow a user
+      tags:
+      - relationships
   /users/create:
     post:
       consumes:

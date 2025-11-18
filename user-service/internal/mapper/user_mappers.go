@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"user-service/internal/domain"
 	"user-service/internal/domain/user"
 	"user-service/internal/dto"
 )
@@ -12,14 +13,17 @@ const dateLayout = "2006-01-02"
 
 func GetUserDto(user *user.User) *dto.UserResponse {
 	userDto := dto.UserResponse{
-		Id:           user.Id,
-		Username:     user.Username,
-		PostKarma:    user.PostKarma,
-		CommentKarma: user.CommentKarma,
-		Name:         user.Name,
-		Description:  user.Description,
-		Birthday:     user.Birthday,
-		CreatedAt:    user.CreatedAt,
+		Id:             user.Id,
+		Username:       user.Username,
+		Name:           user.Name,
+		Description:    user.Description,
+		Birthday:       user.Birthday,
+		FriendsCount:   user.FriendsCount,
+		FollowersCount: user.FollowersCount,
+		FolloweesCount: user.FolloweesCount,
+		PostKarma:      user.PostKarma,
+		CommentKarma:   user.CommentKarma,
+		CreatedAt:      user.CreatedAt,
 	}
 
 	return &userDto
@@ -44,10 +48,29 @@ func GetUserDetailsFromDto(usDetDto *dto.UserDetailStr) (*user.UserDetails, erro
 	if usDetDto.Birthday != nil {
 		bday, dateErr := time.Parse(dateLayout, *usDetDto.Birthday)
 		if dateErr != nil {
-			return nil, fmt.Errorf("user details dto: expected date format 2006-01-02: %v", dateErr)
+			return nil, fmt.Errorf("%w: user details dto: expected date format 2006-01-02: %v",
+				domain.ErrInvalidDto, dateErr)
 		}
 		details.Birthday = &bday
 	}
 
 	return &details, nil
+}
+
+func GetUserSummaries(users []user.User) []dto.UserSummary {
+	var sums = make([]dto.UserSummary, len(users))
+
+	for i, us := range users {
+		sum := GetUserSummary(&us)
+		sums[i] = *sum
+	}
+
+	return sums
+}
+
+func GetUserSummary(us *user.User) *dto.UserSummary {
+	return &dto.UserSummary{
+		Id:       us.Id,
+		Username: us.Username,
+	}
 }

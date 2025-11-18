@@ -1,27 +1,21 @@
 package handlers
 
 import (
-	"errors"
-	"fmt"
-	"log"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
-	"user-service/internal/domain"
 	"user-service/internal/dto"
-	"user-service/internal/usecase"
+	"user-service/internal/usecase/users"
 )
 
-func NewUserHandler(userUseCase *usecase.UserUseCase) *UserHandler {
+func NewUserHandler(userUseCase *users.UserUseCase) *UserHandler {
 	uHandler := UserHandler{userUseCase: userUseCase}
 	return &uHandler
 }
 
 type UserHandler struct {
-	userUseCase *usecase.UserUseCase
+	userUseCase *users.UserUseCase
 }
 
 func (uHand *UserHandler) RegisterHandlers(engine *gin.Engine) {
@@ -46,24 +40,15 @@ func (uHand *UserHandler) RegisterHandlers(engine *gin.Engine) {
 //	@Failure		500	{object}	dto.ErrorResponse
 //	@Router			/users/{id} [get]
 func (uHand *UserHandler) GetById(c *gin.Context) {
-	var idStr string = c.Param("id")
-	id, uuidFormErr := uuid.Parse(idStr)
-
-	if uuidFormErr != nil {
-		respondErr(c, http.StatusBadRequest, uuidFormErr.Error())
+	id, ok := handleGettingId(c, "id")
+	if !ok {
 		return
 	}
 
 	userDto, err := uHand.userUseCase.GetById(id)
 
-	if errors.Is(err, domain.ErrNotFound) {
-		respondErr(c, http.StatusNotFound, err.Error())
-		return
-	}
-
 	if err != nil {
-		respondErr(c, http.StatusInternalServerError, err.Error())
-		log.Println("Unexpected err: ", err)
+		handleDefaultDomainErrors(c, err)
 		return
 	}
 
@@ -86,35 +71,15 @@ func (uHand *UserHandler) GetById(c *gin.Context) {
 //	@Security		BearerAuth
 //	@Router			/users/create [post]
 func (uHand *UserHandler) Create(c *gin.Context) {
-	userToCreate := dto.UserToCreate{}
-	parseErr := c.BindJSON(&userToCreate)
-
-	if parseErr != nil {
-		respondErr(c, http.StatusBadRequest, parseErr.Error())
+	userToCreate, token, ok := handleGettingBodyAndToken[dto.UserToCreate](c)
+	if !ok {
 		return
 	}
 
-	token, err := getAuthorizationToken(c)
-	if err != nil {
-		respondErr(c, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	uuidResponse, err := uHand.userUseCase.Create(&userToCreate, token)
-
-	if errors.Is(err, domain.ErrInvalidToken) {
-		respondErr(c, http.StatusForbidden, err.Error())
-		return
-	}
-
-	if errors.Is(err, domain.ErrDuplicate) {
-		respondErr(c, http.StatusConflict, fmt.Sprintf("User with username=%s already exists", userToCreate.Username))
-		return
-	}
+	uuidResponse, err := uHand.userUseCase.Create(userToCreate, token)
 
 	if err != nil {
-		respondErr(c, http.StatusInternalServerError, err.Error())
-		log.Println("Unexpected err: ", err)
+		handleDefaultDomainErrors(c, err)
 		return
 	}
 
@@ -137,40 +102,15 @@ func (uHand *UserHandler) Create(c *gin.Context) {
 //	@Security		BearerAuth
 //	@Router			/users/me [put]
 func (uHand *UserHandler) UpdateDetails(c *gin.Context) {
-	var userDetails dto.UserDetailStr
-	bindErr := c.BindJSON(&userDetails)
-
-	if bindErr != nil {
-		respondErr(c, http.StatusBadRequest, bindErr.Error())
+	userDetails, token, ok := handleGettingBodyAndToken[dto.UserDetailStr](c)
+	if !ok {
 		return
 	}
 
-	token, tokenErr := getAuthorizationToken(c)
-	if tokenErr != nil {
-		respondErr(c, http.StatusBadRequest, tokenErr.Error())
-		return
-	}
-
-	err := uHand.userUseCase.UpdateDetails(&userDetails, token)
-
-	if errors.Is(err, domain.ErrInvalidDto) {
-		respondErr(c, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	if errors.Is(err, domain.ErrInvalidToken) {
-		respondErr(c, http.StatusForbidden, err.Error())
-		return
-	}
-
-	if errors.Is(err, domain.ErrNotFound) {
-		respondErr(c, http.StatusNotFound, err.Error())
-		return
-	}
+	err := uHand.userUseCase.UpdateDetails(userDetails, token)
 
 	if err != nil {
-		respondErr(c, http.StatusInternalServerError, err.Error())
-		log.Println("Unexpected err: ", err)
+		handleDefaultDomainErrors(c, err)
 		return
 	}
 
@@ -193,35 +133,15 @@ func (uHand *UserHandler) UpdateDetails(c *gin.Context) {
 //	@Security		BearerAuth
 //	@Router			/users/{id} [delete]
 func (uHand *UserHandler) Delete(c *gin.Context) {
-	var idStr string = c.Param("id")
-	id, uuidFormErr := uuid.Parse(idStr)
-
-	if uuidFormErr != nil {
-		respondErr(c, http.StatusBadRequest, uuidFormErr.Error())
+	userId, token, ok := handleGettingIdAndToken(c, "id")
+	if !ok {
 		return
 	}
 
-	token, tokenErr := getAuthorizationToken(c)
-	if tokenErr != nil {
-		respondErr(c, http.StatusBadRequest, tokenErr.Error())
-		return
-	}
-
-	err := uHand.userUseCase.Delete(id, token)
-
-	if errors.Is(err, domain.ErrInvalidToken) {
-		respondErr(c, http.StatusForbidden, err.Error())
-		return
-	}
-
-	if errors.Is(err, domain.ErrNotFound) {
-		respondErr(c, http.StatusNotFound, fmt.Sprintf("User with id=%s was not found", idStr))
-		return
-	}
+	err := uHand.userUseCase.Delete(userId, token)
 
 	if err != nil {
-		respondErr(c, http.StatusInternalServerError, err.Error())
-		log.Println("Unexpected err: ", err)
+		handleDefaultDomainErrors(c, err)
 		return
 	}
 
@@ -243,51 +163,17 @@ func (uHand *UserHandler) Delete(c *gin.Context) {
 //	@Router			/users/me [get]
 //	@Security		BearerAuth
 func (uHand *UserHandler) GetMe(c *gin.Context) {
-	token, tokenErr := getAuthorizationToken(c)
-	if tokenErr != nil {
-		respondErr(c, http.StatusBadRequest, tokenErr.Error())
+	token, ok := handleGettingToken(c)
+	if !ok {
 		return
 	}
 
 	userDto, err := uHand.userUseCase.GetMe(token)
 
-	if errors.Is(err, domain.ErrInvalidToken) {
-		respondErr(c, http.StatusForbidden, err.Error())
-		return
-	}
-
-	if errors.Is(err, domain.ErrNotFound) {
-		respondErr(c, http.StatusNotFound, err.Error())
-		return
-	}
-
 	if err != nil {
-		respondErr(c, http.StatusInternalServerError, err.Error())
-		log.Println("Unexpected err: ", err)
+		handleDefaultDomainErrors(c, err)
 		return
 	}
 
 	c.IndentedJSON(http.StatusOK, *userDto)
-}
-
-func respondErr(c *gin.Context, code int, message string) {
-	errResponse := dto.ErrorResponse{
-		Message: message,
-	}
-
-	c.JSON(code, errResponse)
-}
-
-func getAuthorizationToken(c *gin.Context) (string, error) {
-	jwt := c.GetHeader("Authorization")
-
-	if strings.HasPrefix(jwt, "Bearer ") {
-		jwt = strings.TrimPrefix(jwt, "Bearer ")
-	}
-
-	if jwt == "" {
-		return "", errors.New("no authorization token found")
-	}
-
-	return jwt, nil
 }

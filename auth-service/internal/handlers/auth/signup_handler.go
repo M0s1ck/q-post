@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -49,8 +48,7 @@ func (hand *SignUpHandler) signUpWithUsername(c *gin.Context) {
 	userIdAndTokens, err := hand.signUpUc.SignUpWithUsername(&usernamePass)
 
 	if errors.Is(err, domain.ErrDuplicate) {
-		msg := fmt.Sprintf("User with username=%s already exists", usernamePass.Username)
-		c.JSON(http.StatusConflict, dto.ErrorResponse{Message: msg})
+		c.JSON(http.StatusConflict, dto.ErrorResponse{Message: err.Error()})
 		return
 	}
 

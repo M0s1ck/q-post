@@ -5,7 +5,7 @@ services:
     container_name: postgres-db
     restart: always
     env_file:
-      - .env
+      - ./env
     ports:
       - "5432:5432"
     volumes:
@@ -18,22 +18,36 @@ services:
       start_period: 10s
 
   auth-service:
-    image: mos1ck/auth-service:latest
+    image: mos1ck/q-post-auth-service:latest
     container_name: auth-service
     env_file:
-      - .env
+      - ./env
     ports:
       - "${AUTH_SERVICE_PORT}:${AUTH_SERVICE_PORT}"
     depends_on:
       - psg
 
   user-service:
-    image: mos1ck/user-service:latest
+    image: mos1ck/q-post-user-service:latest
     container_name: user-service
     env_file:
-      - .env
+      - ./env
     ports:
       - "${USER_SERVICE_PORT}:${USER_SERVICE_PORT}"
+    depends_on:
+      - psg
+
+  auth-migrate:
+    image: mos1ck/q-post-auth-migrate:latest
+    env_file:
+      - ./env
+    depends_on:
+      - psg
+
+  user-migrate:
+    image: mos1ck/q-post-user-migrate:latest
+    env_file:
+      - ./env
     depends_on:
       - psg
 
