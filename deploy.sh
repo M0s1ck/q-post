@@ -27,4 +27,4 @@ docker compose -f docker-compose.prod.yaml run --rm user-migrate
 docker compose -f docker-compose.prod.yaml up -d
 sleep 10
 
-docker compose logs --tail=200
+docker compose -f docker-compose.prod.yaml logs --tail=200
