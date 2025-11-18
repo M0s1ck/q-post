@@ -9,7 +9,6 @@ jobs:
 
   bring-up-on-runner:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' # TODO: temp, remove
 
     steps:
       - name: Copy source code
@@ -112,9 +111,9 @@ jobs:
 
   # deploy on vm by pulling images from DockerHub via docker compose
   deploy:
-    # needs: build-and-push-to-docker-hub
+    needs: build-and-push-to-docker-hub
     runs-on: ubuntu-latest
-    #if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout repository
