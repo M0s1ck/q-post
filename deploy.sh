@@ -14,15 +14,15 @@ echo "${DOCKERHUB_TOKEN}" | docker login -u "${DOCKERHUB_USERNAME}" --password-s
 
 sudo docker compose -f docker-compose.prod.yaml pull
 
-docker compose up psg -d
+sudo docker compose up psg -d
 
 sleep 10
 
-docker compose run --rm auth-migrate
-docker compose run --rm user-migrate
+sudo docker compose run --rm auth-migrate
+sudo docker compose run --rm user-migrate
 
 sudo docker compose -f docker-compose.prod.yaml up -d
 
 sleep 10
 
-docker compose logs --tail=200
+sudo docker compose logs --tail=200
