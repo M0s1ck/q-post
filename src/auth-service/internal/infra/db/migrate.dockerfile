@@ -7,8 +7,8 @@ RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.1/
 
 WORKDIR /app
 
-COPY ./migrations ./migrations
-COPY ./migrate-entrypoint.sh ./entrypoint.sh
+COPY migrations ./migrations
+COPY migrate-entrypoint.sh ./entrypoint.sh
 
 RUN chmod +x ./entrypoint.sh
 

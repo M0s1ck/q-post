@@ -18,8 +18,8 @@ services:
 
   auth-service:
     build:
-      context: ./auth-service
-      dockerfile: Dockerfile
+      context: auth-service
+      dockerfile: auth-service/Dockerfile
     container_name: auth-service
     env_file:
       - .env
@@ -30,8 +30,8 @@ services:
 
   user-service:
     build:
-      context: ./user-service
-      dockerfile: Dockerfile
+      context: user-service
+      dockerfile: user-service/Dockerfile
     container_name: user-service
     env_file:
       - .env
@@ -42,8 +42,8 @@ services:
 
   auth-migrate:
     build:
-      context: ./auth-service/internal/infra/db
-      dockerfile: migrate.dockerfile
+      context: auth-service/internal/infra/db
+      dockerfile: auth-service/internal/infra/db/migrate.dockerfile
     env_file:
       - .env
     depends_on:
@@ -51,8 +51,8 @@ services:
 
   user-migrate:
     build:
-      context: ./user-service/internal/infra/db
-      dockerfile: migrate.dockerfile
+      context: user-service/internal/infra/db
+      dockerfile: user-service/internal/infra/db/migrate.dockerfile
     env_file:
       - .env
     depends_on:
